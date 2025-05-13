@@ -184,7 +184,7 @@ function View_rail_freight() {
                       scope="col"
                       className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      40ft (0-10 Ton)
+                      40ft (10-20 Ton)
                     </th>
                     <th
                       scope="col"
@@ -225,7 +225,7 @@ function View_rail_freight() {
                           {formatCurrency(item.weight20ft20Plus, item.currency)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                          {formatCurrency(item.weight40ft0_10, item.currency)}
+                          {formatCurrency(item.weight40ft10_20, item.currency)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.weight40ft20Plus, item.currency)}
