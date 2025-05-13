@@ -132,63 +132,63 @@ function View_rail_freight() {
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       User
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       POR
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       POL
                     </th>
 
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Container Type
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Shipping Line
                     </th>
 
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       20ft (0-10 Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       20ft (10-20 Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       20ft (20+ Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       40ft (10-20 Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       40ft (20+ Ton)
                     </th>
@@ -198,36 +198,36 @@ function View_rail_freight() {
                   {currentEntries.length > 0 ? (
                     currentEntries.map((item, index) => (
                       <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {getUserName(item)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {item.por}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {item.pol}
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {item.container_type}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {item.shipping_lines}
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.weight20ft0_10, item.currency)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.weight20ft10_20, item.currency)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.weight20ft20Plus, item.currency)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.weight40ft10_20, item.currency)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.weight40ft20Plus, item.currency)}
                         </td>
                       </tr>

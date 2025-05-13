@@ -895,7 +895,7 @@ const Add_origin = () => {
                 {currentEntries.length > 0 ? (
                   currentEntries.map((row, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="py-4 px-6 text-sm text-red-600 font-medium">
+                      <td className="py-4 px-4 text-sm text-red-600 font-medium">
                         {(() => {
                           // Debug the structure of each row to see available fields
                           console.log("Row data for username:", row);
@@ -931,47 +931,47 @@ const Add_origin = () => {
                           }
                         })()}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900">
                         {row.por}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900">
                         {row.pol}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900">
                         {row.container_type}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900">
                         {row.shipping_lines}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
                         {typeof row.bl_fees === "object" && row.bl_fees !== null
                           ? `${row.bl_fees.currency || "$"} ${
                               row.bl_fees.value
                             }`
                           : `${row.currency || "$"} ${row.bl_fees}`}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
                         {typeof row.thc === "object" && row.thc !== null
                           ? `${row.thc.currency || "$"} ${row.thc.value}`
                           : `${row.currency || "$"} ${row.thc}`}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
                         {typeof row.muc === "object" && row.muc !== null
                           ? `${row.muc.currency || "$"} ${row.muc.value}`
                           : `${row.currency || "$"} ${row.muc}`}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
                         {typeof row.toll === "object" && row.toll !== null
                           ? `${row.toll.currency || "$"} ${row.toll.value}`
                           : `${row.currency || "$"} ${row.toll}`}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
                         {typeof row.ihc === "object" && row.ihc !== null
                           ? `${row.ihc.currency || "$"} ${row.ihc.value}`
                           : `${row.currency || "$"} ${row.ihc}`}
                       </td>
 
-                      <td className="py-4 px-6 text-center">
+                      <td className="py-4 px-4 text-center">
                         <button
                           onClick={() => handleEditClick(row)}
                           className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium py-1 px-3 rounded-md text-xs transition-colors inline-flex items-center"

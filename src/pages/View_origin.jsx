@@ -115,42 +115,42 @@ const View_origin = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POR</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POL</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Container Type</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipping Line</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">BL Fees</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">THC</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">MUC</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">TOLL</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IHC</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POR</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POL</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Container Type</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipping Line</th>
+                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">BL Fees</th>
+                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">THC</th>
+                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">MUC</th>
+                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">TOLL</th>
+                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IHC</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentEntries.length > 0 ? (
                     currentEntries.map((item, index) => (
                       <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
                           {getUserName(item)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.por}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.pol}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.container_type}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.shipping_lines}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.por}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.pol}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.container_type}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.shipping_lines}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.bl_fees)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.thc)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.muc)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.toll)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.ihc)}
                         </td>
                       </tr>

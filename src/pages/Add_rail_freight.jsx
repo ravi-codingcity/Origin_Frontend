@@ -863,42 +863,42 @@ const Add_rail_freight = () => {
                 {currentEntries.length > 0 ? (
                   currentEntries.map((row, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="py-4 px-6 text-sm text-red-600 font-medium">
+                      <td className="py-4 px-4 text-sm text-red-600 font-medium">
                         {getUserName(row)}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900">
                         {row.por}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900">
                         {row.pol}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900">
                         {row.container_type}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900">
                         {row.shipping_lines}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {row.weight20ft0_10
                           ? `${row.currency} ${row.weight20ft0_10}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {row.weight20ft10_20
                           ? `${row.currency} ${row.weight20ft10_20}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {row.weight20ft20Plus
                           ? `${row.currency} ${row.weight20ft20Plus}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {row.weight40ft10_20
                           ? `${row.currency} ${row.weight40ft10_20}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {row.weight40ft20Plus
                           ? `${row.currency} ${row.weight40ft20Plus}`
                           : "-"}
