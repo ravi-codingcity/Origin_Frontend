@@ -21,7 +21,7 @@ const App = () => {
           path="/export/view_rail_freight"
           element={<View_rail_freight />}
         />
-        <Route path="/export/Add_rail_freight" element={<Add_rail_freight />} />
+        <Route path="/export/add_rail_freight" element={<Add_rail_freight />} />
       </Routes>
     </Router>
   );
