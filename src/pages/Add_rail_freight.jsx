@@ -170,7 +170,7 @@ const Add_rail_freight = () => {
       console.log("Submitting form data (backend compatible):", formDataToSend);
 
       const response = await fetch(
-        "https://origin-backend-3v3f.onrender.com//api/railfreight/forms/create",
+        "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/create",
         {
           method: "POST",
           headers: {
@@ -228,7 +228,7 @@ const Add_rail_freight = () => {
   const fetchRailFreightData = async () => {
     try {
       const response = await fetch(
-        "https://origin-backend-3v3f.onrender.com//api/railfreight/forms/user",
+        "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/user",
         {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
@@ -318,7 +318,7 @@ const Add_rail_freight = () => {
       console.log("Sending updated record:", updatedRecord);
 
       const response = await fetch(
-        `https://origin-backend-3v3f.onrender.com//api/railfreight/forms/${recordId}`,
+        `https://origin-backend-3v3f.onrender.com/api/railfreight/forms/${recordId}`,
         {
           method: "PUT",
           headers: {
