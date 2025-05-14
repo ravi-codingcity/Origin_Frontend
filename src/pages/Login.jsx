@@ -80,7 +80,7 @@ const Login = () => {
         <div className="text-center">
           <img src={logo} alt="OmTrans Logo" className="h-20 mx-auto mb-3" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Freight Pro for Local Charges
+            Freight Pro for <span className="text-red-600">Local Charges</span>
           </h2>
           <p className="text-gray-600">Sign in to access your dashboard</p>
         </div>
@@ -107,7 +107,7 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  placeholder="you@example.com"
+                  placeholder="Enter Username"
                 />
               </div>
             </div>

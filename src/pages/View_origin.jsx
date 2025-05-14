@@ -124,7 +124,7 @@ const View_origin = () => {
                     <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">THC</th>
                     <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">MUC</th>
                     <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">TOLL</th>
-                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IHC</th>
+                   
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -150,9 +150,7 @@ const View_origin = () => {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.toll)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                          {formatCurrency(item.ihc)}
-                        </td>
+                       
                       </tr>
                     ))
                   ) : (

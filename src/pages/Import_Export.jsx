@@ -66,7 +66,7 @@ const Import_Export = () => {
                 </div>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mt-4 text-center">
-                Export Origin
+               Add Export Origin Charges
               </h2>
 
               <div className="mt-6 space-y-2">
@@ -85,7 +85,7 @@ const Import_Export = () => {
               className="block w-full py-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-center font-medium hover:from-red-600 hover:to-red-700 transition-colors"
             >
               <div className="flex items-center justify-center  text-lg">
-                <span>Access Export Rates</span>
+                <span>Access Export Charges</span>
                 <FaArrowRight className="ml-2" />
               </div>
             </Link>
@@ -99,7 +99,7 @@ const Import_Export = () => {
                 </div>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mt-4 text-center">
-                Import Origin
+               Add Import Origin Charges
               </h2>
 
               <div className="mt-6 space-y-2">
@@ -118,7 +118,7 @@ const Import_Export = () => {
               className="block w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-center font-medium hover:from-blue-600 hover:to-blue-700 transition-colors"
             >
               <div className="flex items-center justify-center text-lg">
-                <span>Access Import Rates</span>
+                <span>Access Import Charges</span>
                 <FaArrowRight className="ml-2" />
               </div>
             </Link>

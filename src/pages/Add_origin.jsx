@@ -55,7 +55,7 @@ const Add_origin = () => {
     thc: { value: "", currency: "₹" },
     muc: { value: "", currency: "₹" },
     toll: { value: "", currency: "₹" },
-    ihc: { value: "", currency: "₹" },
+   
   });
 
   // State for storing fetched data
@@ -77,7 +77,7 @@ const Add_origin = () => {
     const { name, value } = e.target;
 
     // Check if this is a cost field
-    if (["bl_fees", "thc", "muc", "toll", "ihc"].includes(name)) {
+    if (["bl_fees", "thc", "muc", "toll"].includes(name)) {
       setFormData((prev) => ({
         ...prev,
         [name]: {
@@ -162,10 +162,7 @@ const Add_origin = () => {
           value: parseFloat(formData.toll.value) || 0,
           currency: formData.toll.currency,
         },
-        ihc: {
-          value: parseFloat(formData.ihc.value) || 0,
-          currency: formData.ihc.currency,
-        },
+       
       };
 
       console.log("Submitting form data:", formDataToSend);
@@ -201,7 +198,7 @@ const Add_origin = () => {
         thc: { value: "", currency: "₹" },
         muc: { value: "", currency: "₹" },
         toll: { value: "", currency: "₹" },
-        ihc: { value: "", currency: "₹" },
+       
       });
 
       // Fetch updated data
@@ -224,7 +221,7 @@ const Add_origin = () => {
           thc: parseFloat(formData.thc.value) || 0,
           muc: parseFloat(formData.muc.value) || 0,
           toll: parseFloat(formData.toll.value) || 0,
-          ihc: parseFloat(formData.ihc.value) || 0,
+         
           // Add currency as a separate field for backward compatibility
           currency: formData.bl_fees.currency || "$",
         };
@@ -261,7 +258,7 @@ const Add_origin = () => {
           thc: { value: "", currency: "₹" },
           muc: { value: "", currency: "₹" },
           toll: { value: "", currency: "₹" },
-          ihc: { value: "", currency: "₹" },
+          
         });
 
         // Fetch updated data
@@ -294,7 +291,7 @@ const Add_origin = () => {
 
     // Ensure proper structure for the editingRecord before submission to match backend expectations
     const prepareEditingRecord = () => {
-      const fields = ["bl_fees", "thc", "muc", "toll", "ihc"];
+      const fields = ["bl_fees", "thc", "muc", "toll"];
       const record = { ...editingRecord };
       
       // Store a common currency for all fields
@@ -796,40 +793,7 @@ const Add_origin = () => {
                     />
                   </div>
                 </div>
-
-                {/* IHC */}
-                <div>
-                  <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
-                    htmlFor="IHC"
-                  >
-                    IHC (Railing)
-                  </label>
-                  <div className="relative flex">
-                    <select
-                      className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1"
-                      value={formData.ihc.currency}
-                      onChange={(e) =>
-                        handleCurrencyChange("ihc", e.target.value)
-                      }
-                    >
-                      {Object.entries(currencySymbols).map(([symbol, code]) => (
-                        <option key={code} value={symbol}>
-                          {symbol}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      required
-                      className="shadow-sm border border-gray-300 rounded-md w-full py-1.5 pl-10 pr-2 text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                      id="IHC"
-                      type="number"
-                      name="ihc"
-                      value={formData.ihc.value}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
+               
               </div>
             </div>
 
@@ -887,7 +851,7 @@ const Add_origin = () => {
                   <th className="py-3 px-4 text-right">THC</th>
                   <th className="py-3 px-4 text-right">MUC</th>
                   <th className="py-3 px-4 text-right">TOLL</th>
-                  <th className="py-3 px-4 text-right">IHC</th>
+                  
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -965,11 +929,7 @@ const Add_origin = () => {
                           ? `${row.toll.currency || "$"} ${row.toll.value}`
                           : `${row.currency || "$"} ${row.toll}`}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
-                        {typeof row.ihc === "object" && row.ihc !== null
-                          ? `${row.ihc.currency || "$"} ${row.ihc.value}`
-                          : `${row.currency || "$"} ${row.ihc}`}
-                      </td>
+                     
 
                       <td className="py-4 px-4 text-center">
                         <button
@@ -1550,73 +1510,7 @@ const Add_origin = () => {
                       />
                     </div>
                   </div>
-
-                  <div className="mb-4">
-                    <label
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                      htmlFor="edit-ihc"
-                    >
-                      IHC (Railing Costs)
-                    </label>
-                    <div className="relative flex">
-                      <select
-                        className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1"
-                        value={
-                          typeof editingRecord.ihc === "object" &&
-                          editingRecord.ihc !== null
-                            ? editingRecord.ihc.currency || "₹"
-                            : "₹"
-                        }
-                        onChange={(e) => {
-                          setEditingRecord((prev) => ({
-                            ...prev,
-                            ihc: {
-                              value:
-                                typeof prev.ihc === "object" &&
-                                prev.ihc !== null
-                                  ? prev.ihc.value
-                                  : parseFloat(prev.ihc) || 0,
-                              currency: e.target.value,
-                            },
-                          }));
-                        }}
-                      >
-                        {Object.entries(currencySymbols).map(
-                          ([symbol, code]) => (
-                            <option key={code} value={symbol}>
-                              {symbol}
-                            </option>
-                          )
-                        )}
-                      </select>
-                      <input
-                        required
-                        className="shadow appearance-none border rounded w-full py-2 pl-10 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="edit-ihc"
-                        type="number"
-                        name="ihc"
-                        value={
-                          typeof editingRecord.ihc === "object" &&
-                          editingRecord.ihc !== null
-                            ? editingRecord.ihc.value
-                            : editingRecord.ihc || ""
-                        }
-                        onChange={(e) => {
-                          setEditingRecord((prev) => ({
-                            ...prev,
-                            ihc: {
-                              currency:
-                                typeof prev.ihc === "object" &&
-                                prev.ihc !== null
-                                  ? prev.ihc.currency || "₹"
-                                  : "₹",
-                              value: e.target.value,
-                            },
-                          }));
-                        }}
-                      />
-                    </div>
-                  </div>
+                 
                 </div>
 
                 <div className="flex justify-end mt-6 space-x-3">
