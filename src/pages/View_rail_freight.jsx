@@ -11,6 +11,10 @@ function View_rail_freight() {
   // Add pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage] = useState(50);
+  // Add state for username filter
+  const [usernameFilter, setUsernameFilter] = useState("");
+  // Add state for refresh loading
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Format currency values for display
   const formatCurrency = (value, currency = "₹") => {
@@ -72,7 +76,10 @@ function View_rail_freight() {
       .then((data) => {
         console.log("Fetched rail freight data:", data);
         // Debug log to check currencies
-        console.log("Currencies from server:", data.map(item => item.currency));
+        console.log(
+          "Currencies from server:",
+          data.map((item) => item.currency)
+        );
         setRailFreightData(data);
         setIsLoading(false);
       })
@@ -86,23 +93,92 @@ function View_rail_freight() {
   // Sort and paginate data
   const sortedData = [...railFreightData].sort((a, b) => {
     // Sort by createdAt date in descending order (newest first)
-    return new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0);
+    return (
+      new Date(b.createdAt || b.updatedAt || 0) -
+      new Date(a.createdAt || a.updatedAt || 0)
+    );
   });
+
+  // Extract unique usernames for dropdown
+  const uniqueUsernames = React.useMemo(() => {
+    const usernames = railFreightData.map((item) => getUserName(item));
+    return ["", ...new Set(usernames)].sort(); // Add empty option and sort alphabetically
+  }, [railFreightData]);
+
+  // Apply filters to data before pagination
+  const filteredData = usernameFilter
+    ? sortedData.filter((item) => {
+        const username = getUserName(item);
+        return username === usernameFilter; // Exact match for dropdown selection
+      })
+    : sortedData;
 
   // Get current entries for pagination
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentEntries = sortedData.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(sortedData.length / entriesPerPage);
+  const currentEntries = filteredData.slice(
+    indexOfFirstEntry,
+    indexOfLastEntry
+  );
+  const totalPages = Math.ceil(filteredData.length / entriesPerPage);
 
   // Function to change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    setUsernameFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  // Add function to handle refresh with loading state
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetch("https://origin-backend-3v3f.onrender.com/api/railfreight/forms/all")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Network response was not ok (Status: ${response.status})`
+          );
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Refreshed rail freight data:", data);
+        setRailFreightData(data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching rail freight data:", error);
+        setError(error.message);
+        setIsLoading(false);
+      })
+      .finally(() => {
+        setIsRefreshing(false);
+      });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Rail Freight Charges</h1>
+      <div className="container mx-auto px-4 py-4">
+        <h1 className="text-xl font-bold mb-3 flex items-center">
+          View all India Rail Freight Charges
+          <svg
+            className="h-5 w-7 ml-2"
+            viewBox="0 0 900 600"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Saffron band */}
+            <rect width="900" height="200" fill="#FF9933" />
+            {/* White band */}
+            <rect y="200" width="900" height="200" fill="#FFFFFF" />
+            {/* Green band */}
+            <rect y="400" width="900" height="200" fill="#138808" />
+            {/* Navy blue Ashoka Chakra */}
+            <circle cx="450" cy="300" r="50" fill="#000080" />
+          </svg>
+        </h1>
 
         {/* Error message */}
         {error && (
@@ -116,20 +192,110 @@ function View_rail_freight() {
 
         {/* Loading indicator */}
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="flex justify-center items-center h-48">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : (
           <div>
-            {/* Pagination info */}
-            <div className="mb-4 flex justify-between items-center">
-              <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">{railFreightData.length > 0 ? indexOfFirstEntry + 1 : 0}</span> to{" "}
-                <span className="font-medium">{Math.min(indexOfLastEntry, railFreightData.length)}</span> of{" "}
-                <span className="font-medium">{railFreightData.length}</span> entries
+            {/* Filter controls with refresh button */}
+            <div className="mb-3 bg-white p-3 rounded-md shadow-sm">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2 w-2/3">
+                  <label
+                    htmlFor="username-filter"
+                    className="text-sm font-medium text-gray-700 whitespace-nowrap"
+                  >
+                    Filter by:
+                  </label>
+                  <select
+                    id="username-filter"
+                    className="block w-full py-1.5 px-2 border border-gray-300 rounded-md text-sm bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={usernameFilter}
+                    onChange={handleFilterChange}
+                  >
+                    <option value="">All Users</option>
+                    {uniqueUsernames
+                      .filter((name) => name !== "")
+                      .map((username) => (
+                        <option key={username} value={username}>
+                          {username}
+                        </option>
+                      ))}
+                  </select>
+
+                  {usernameFilter && (
+                    <button
+                      onClick={() => {
+                        setUsernameFilter("");
+                        setCurrentPage(1);
+                      }}
+                      className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      <svg
+                        className="h-3 w-3 mr-1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors ${
+                    isRefreshing ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-3.5 w-3.5 mr-1 ${
+                      isRefreshing ? "animate-spin" : ""
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  {isRefreshing ? "Refreshing..." : "Refresh"}
+                </button>
+              </div>
+
+              {usernameFilter && (
+                <div className="mt-1 text-xs text-gray-600">
+                  Showing {filteredData.length} results for "{usernameFilter}"
+                </div>
+              )}
+            </div>
+
+            {/* Compact pagination info */}
+            <div className="mb-2 flex justify-between items-center text-xs">
+              <div className="text-gray-700">
+                Showing {filteredData.length > 0 ? indexOfFirstEntry + 1 : 0} to{" "}
+                {Math.min(indexOfLastEntry, filteredData.length)} of{" "}
+                {filteredData.length} entries
+                {usernameFilter && (
+                  <span> (filtered from {sortedData.length})</span>
+                )}
               </div>
             </div>
-            
+
             {/* Responsive table */}
             <div className="overflow-x-auto bg-white rounded-lg shadow overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200">
@@ -203,7 +369,7 @@ function View_rail_freight() {
                   {currentEntries.length > 0 ? (
                     currentEntries.map((item, index) => (
                       <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
                           {getUserName(item)}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -250,9 +416,9 @@ function View_rail_freight() {
                 </tbody>
               </table>
             </div>
-            
-            {/* Pagination controls */}
-            {railFreightData.length > entriesPerPage && (
+
+            {/* Pagination controls - update to use filteredData.length */}
+            {filteredData.length > entriesPerPage && (
               <div className="mt-4 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
@@ -281,13 +447,26 @@ function View_rail_freight() {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{railFreightData.length > 0 ? indexOfFirstEntry + 1 : 0}</span> to{" "}
-                      <span className="font-medium">{Math.min(indexOfLastEntry, railFreightData.length)}</span> of{" "}
-                      <span className="font-medium">{railFreightData.length}</span> results
+                      Showing{" "}
+                      <span className="font-medium">
+                        {railFreightData.length > 0 ? indexOfFirstEntry + 1 : 0}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(indexOfLastEntry, railFreightData.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {railFreightData.length}
+                      </span>{" "}
+                      results
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
                       <button
                         onClick={() => paginate(currentPage - 1)}
                         disabled={currentPage === 1}
@@ -298,42 +477,56 @@ function View_rail_freight() {
                         }`}
                       >
                         <span className="sr-only">Previous</span>
-                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="h-5 w-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
-                      
+
                       {/* Page numbers */}
-                      {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                        let pageNumber;
-                        
-                        // Calculate which page numbers to show (centered around current page)
-                        if (totalPages <= 5) {
-                          pageNumber = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNumber = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNumber = totalPages - 4 + i;
-                        } else {
-                          pageNumber = currentPage - 2 + i;
+                      {Array.from({ length: Math.min(5, totalPages) }).map(
+                        (_, i) => {
+                          let pageNumber;
+
+                          // Calculate which page numbers to show (centered around current page)
+                          if (totalPages <= 5) {
+                            pageNumber = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNumber = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNumber = totalPages - 4 + i;
+                          } else {
+                            pageNumber = currentPage - 2 + i;
+                          }
+
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => paginate(pageNumber)}
+                              aria-current={
+                                currentPage === pageNumber ? "page" : undefined
+                              }
+                              className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                currentPage === pageNumber
+                                  ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                  : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
                         }
-                        
-                        return (
-                          <button
-                            key={pageNumber}
-                            onClick={() => paginate(pageNumber)}
-                            aria-current={currentPage === pageNumber ? "page" : undefined}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              currentPage === pageNumber
-                                ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                            }`}
-                          >
-                            {pageNumber}
-                          </button>
-                        );
-                      })}
-                      
+                      )}
+
                       <button
                         onClick={() => paginate(currentPage + 1)}
                         disabled={currentPage === totalPages}
@@ -344,8 +537,18 @@ function View_rail_freight() {
                         }`}
                       >
                         <span className="sr-only">Next</span>
-                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="h-5 w-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     </nav>
@@ -361,4 +564,3 @@ function View_rail_freight() {
 }
 
 export default View_rail_freight;
-

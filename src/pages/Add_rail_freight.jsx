@@ -71,6 +71,7 @@ const Add_rail_freight = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false); // Add refreshing state
 
   // Determine which weight fields to show based on container type
   const showWeightFields = () => {
@@ -248,6 +249,7 @@ const Add_rail_freight = () => {
 
   // Fetch rail freight data
   const fetchRailFreightData = async () => {
+    setIsRefreshing(true); // Start loading state
     try {
       const response = await fetch(
         "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/user",
@@ -266,9 +268,12 @@ const Add_rail_freight = () => {
       console.log("Fetched rail freight data:", data);
       setRailFreightData(data);
       setCurrentPage(1); // Reset to first page when new data is fetched
+      displaySuccessMessage("Data refreshed successfully"); // Add success message
     } catch (error) {
       console.error("Error fetching data:", error);
       setErrorMessage(`Failed to fetch data: ${error.message}`);
+    } finally {
+      setIsRefreshing(false); // End loading state
     }
   };
 
@@ -434,15 +439,20 @@ const Add_rail_freight = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold text-gray-800">
-            Rail Freight Charges Management
+          Add Rail Freight Charges
           </h1>
           <button
             onClick={fetchRailFreightData}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors"
+            disabled={isRefreshing}
+            className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors ${
+              isRefreshing ? "opacity-75 cursor-not-allowed" : ""
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-3.5 w-3.5 mr-1"
+              className={`h-3.5 w-3.5 mr-1 ${
+                isRefreshing ? "animate-spin" : ""
+              }`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -454,7 +464,7 @@ const Add_rail_freight = () => {
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            Refresh
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
         </div>
 
@@ -520,18 +530,16 @@ const Add_rail_freight = () => {
         <div className="bg-white shadow-sm rounded-md overflow-hidden mb-4 border border-gray-200">
           <div className="bg-blue-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">
-                Add Rail Freight Charges
-              </h2>
-              <p className="text-xs text-gray-600">
-                Enter new rail freight charge details
+              
+              <p className="text-sm text-gray-600">
+                Enter new rail freight charge details also update charges timely
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-4">
             <div className="mb-3">
-              <h3 className="text-sm font-medium text-gray-700 mb-2 pb-1 border-b border-gray-200">
+              <h3 className="text-sm font-medium text-red-600 mb-2 pb-1 border-b border-gray-200">
                 Shipment Information
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
@@ -558,7 +566,7 @@ const Add_rail_freight = () => {
 
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="POR"
                   >
                     Place of Receipt (POR)
@@ -590,7 +598,7 @@ const Add_rail_freight = () => {
 
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="POL"
                   >
                     Port of Loading (POL)
@@ -622,7 +630,7 @@ const Add_rail_freight = () => {
 
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="containerType"
                   >
                     Container Type
@@ -654,7 +662,7 @@ const Add_rail_freight = () => {
 
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="shippingLine"
                   >
                     Shipping Line
@@ -685,7 +693,7 @@ const Add_rail_freight = () => {
                 </div>
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="currency"
                   >
                     Common Currency
@@ -735,7 +743,7 @@ const Add_rail_freight = () => {
 
             {showWeightFields() && (
               <div className="mb-3">
-                <h3 className="text-sm font-medium text-gray-700 mb-2 pb-1 border-b border-gray-200">
+                <h3 className="text-sm font-medium text-red-600 mb-2 pb-1 border-b border-gray-200">
                   Weight-based Charges - {showWeightFields()}
                 </h3>
 
@@ -744,7 +752,7 @@ const Add_rail_freight = () => {
                     <>
                       <div>
                         <label
-                          className="block text-gray-700 text-xs font-medium mb-1"
+                          className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight20ft0_10"
                         >
                           20ft (0-10 Ton)
@@ -767,7 +775,7 @@ const Add_rail_freight = () => {
 
                       <div>
                         <label
-                          className="block text-gray-700 text-xs font-medium mb-1"
+                          className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight20ft10_20"
                         >
                           20ft (10-20 Ton)
@@ -790,7 +798,7 @@ const Add_rail_freight = () => {
 
                       <div>
                         <label
-                          className="block text-gray-700 text-xs font-medium mb-1"
+                          className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight20ft20Plus"
                         >
                           20ft (20+ Ton)
@@ -817,7 +825,7 @@ const Add_rail_freight = () => {
                     <>
                       <div>
                         <label
-                          className="block text-gray-700 text-xs font-medium mb-1"
+                          className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight40ft10_20"
                         >
                           40ft (10-20 Ton)
@@ -840,7 +848,7 @@ const Add_rail_freight = () => {
 
                       <div>
                         <label
-                          className="block text-gray-700 text-xs font-medium mb-1"
+                          className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight40ft20Plus"
                         >
                           40ft (20+ Ton)

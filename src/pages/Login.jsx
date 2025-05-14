@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/omtrans_logo.png";
 import {
@@ -17,19 +17,31 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showDelayMessage, setShowDelayMessage] = useState(false);
   const navigate = useNavigate();
+  const loginTimeoutRef = useRef(null);
 
   async function loginUser(email, password) {
     setIsLoading(true);
     setError("");
+    setShowDelayMessage(false);
+
+    // Set a timeout to show the delay message after 10 seconds
+    loginTimeoutRef.current = setTimeout(() => {
+      setShowDelayMessage(true);
+    }, 10000);
+
     try {
-      const response = await fetch("https://origin-backend-3v3f.onrender.com/api/origin/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "https://origin-backend-3v3f.onrender.com/api/origin/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
       const data = await response.json();
 
       if (data.token) {
@@ -45,6 +57,11 @@ const Login = () => {
     } catch (err) {
       setError("Connection error. Please try again later.");
     } finally {
+      // Clear the timeout when login completes (success or failure)
+      if (loginTimeoutRef.current) {
+        clearTimeout(loginTimeoutRef.current);
+        loginTimeoutRef.current = null;
+      }
       setIsLoading(false);
     }
   }
@@ -80,7 +97,8 @@ const Login = () => {
         <div className="text-center">
           <img src={logo} alt="OmTrans Logo" className="h-20 mx-auto mb-3" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Freight Pro for <span className="text-red-600">Local Charges</span>
+            Freight Pro for{" "}
+            <span className="text-red-600">Local Charges</span>
           </h2>
           <p className="text-gray-600">Sign in to access your dashboard</p>
         </div>
@@ -183,6 +201,13 @@ const Login = () => {
                 "Sign in"
               )}
             </button>
+
+            {/* Server delay message - displays after 10 seconds */}
+            {isLoading && showDelayMessage && (
+              <div className="mt-2 text-center text-sm text-orange-600 animate-pulse">
+                Server is busy, it's almost done...
+              </div>
+            )}
           </div>
         </form>
 

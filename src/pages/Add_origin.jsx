@@ -55,7 +55,6 @@ const Add_origin = () => {
     thc: { value: "", currency: "₹" },
     muc: { value: "", currency: "₹" },
     toll: { value: "", currency: "₹" },
-   
   });
 
   // State for storing fetched data
@@ -75,6 +74,7 @@ const Add_origin = () => {
   // Add states for loading and success messages
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
@@ -129,7 +129,7 @@ const Add_origin = () => {
   const displaySuccessMessage = (message) => {
     setSuccessMessage(message);
     setShowSuccessToast(true);
-    
+
     // Auto-dismiss after 3 seconds
     setTimeout(() => {
       setShowSuccessToast(false);
@@ -181,7 +181,6 @@ const Add_origin = () => {
           value: parseFloat(formData.toll.value) || 0,
           currency: formData.toll.currency,
         },
-       
       };
 
       console.log("Submitting form data:", formDataToSend);
@@ -221,7 +220,7 @@ const Add_origin = () => {
 
       // Fetch updated data
       fetchShipmentData();
-      
+
       // Show success message
       displaySuccessMessage("Entry saved successfully!");
     } catch (error) {
@@ -242,7 +241,7 @@ const Add_origin = () => {
           thc: parseFloat(formData.thc.value) || 0,
           muc: parseFloat(formData.muc.value) || 0,
           toll: parseFloat(formData.toll.value) || 0,
-         
+
           // Add currency as a separate field for backward compatibility
           currency: formData.bl_fees.currency || "$",
         };
@@ -279,12 +278,11 @@ const Add_origin = () => {
           thc: { value: "", currency: "₹" },
           muc: { value: "", currency: "₹" },
           toll: { value: "", currency: "₹" },
-          
         });
 
         // Fetch updated data
         fetchShipmentData();
-        
+
         // Show success message
         displaySuccessMessage("Entry saved successfully!");
       } catch (fallbackError) {
@@ -322,24 +320,32 @@ const Add_origin = () => {
     const prepareEditingRecord = () => {
       const fields = ["bl_fees", "thc", "muc", "toll"];
       const record = { ...editingRecord };
-      
+
       // Store a common currency for all fields
       let commonCurrency = "₹";
-      
+
       // Extract currency from the first available field
       for (const field of fields) {
-        if (record[field] && typeof record[field] === "object" && record[field].currency) {
+        if (
+          record[field] &&
+          typeof record[field] === "object" &&
+          record[field].currency
+        ) {
           commonCurrency = record[field].currency;
           break;
         }
       }
-      
+
       // Set the common currency field
       record.currency = commonCurrency;
-      
+
       // Convert all cost fields to simple numbers
       fields.forEach((field) => {
-        if (record[field] && typeof record[field] === "object" && record[field].hasOwnProperty("value")) {
+        if (
+          record[field] &&
+          typeof record[field] === "object" &&
+          record[field].hasOwnProperty("value")
+        ) {
           // Extract numeric value from object
           record[field] = parseFloat(record[field].value) || 0;
         } else if (record[field] !== undefined) {
@@ -350,7 +356,7 @@ const Add_origin = () => {
           record[field] = 0;
         }
       });
-      
+
       return record;
     };
 
@@ -381,7 +387,7 @@ const Add_origin = () => {
       setIsEditModalOpen(false);
       setEditingRecord(null);
       fetchShipmentData();
-      
+
       // Show success message
       displaySuccessMessage("Entry updated successfully!");
     } catch (error) {
@@ -394,6 +400,7 @@ const Add_origin = () => {
 
   // Fetch shipment data with console.log to inspect response structure
   const fetchShipmentData = async () => {
+    setIsRefreshing(true);
     try {
       const response = await fetch(
         "https://origin-backend-3v3f.onrender.com/api/origin/forms/user",
@@ -412,8 +419,12 @@ const Add_origin = () => {
       console.log("API Response Data:", data); // Debug API response
       setShipmentData(data);
       setCurrentPage(1); // Reset to first page when new data is loaded
+      displaySuccessMessage("Data refreshed successfully");
     } catch (error) {
       console.error("Error fetching data:", error);
+      setErrorMessage(`Failed to refresh data: ${error.message}`);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -443,7 +454,10 @@ const Add_origin = () => {
   // Sort and paginate data
   const sortedData = [...shipmentData].sort((a, b) => {
     // Sort by createdAt date in descending order (newest first)
-    return new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0);
+    return (
+      new Date(b.createdAt || b.updatedAt || 0) -
+      new Date(a.createdAt || a.updatedAt || 0)
+    );
   });
 
   // Get current entries for pagination
@@ -461,15 +475,22 @@ const Add_origin = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold text-gray-800">
-            Origin/Local Charges Management
+           Add Origin/Local Charges
           </h1>
           <button
             onClick={fetchShipmentData}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors"
+            disabled={isRefreshing}
+            className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors ${
+              isRefreshing ? "opacity-75 cursor-not-allowed" : ""
+            }`}
           >
+          
+
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-3.5 w-3.5 mr-1"
+              className={`h-3.5 w-3.5 mr-1 ${
+                isRefreshing ? "animate-spin" : ""
+              }`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -478,10 +499,11 @@ const Add_origin = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 8.003 0 01-15.357-2m15.357 2H15"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            Refresh
+
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
         </div>
 
@@ -514,7 +536,10 @@ const Add_origin = () => {
         {showSuccessToast && (
           <div className="fixed top-4 right-4 flex max-w-sm w-full mx-auto overflow-hidden bg-white rounded-lg shadow-md z-50 animate-fade-in-down">
             <div className="flex items-center justify-center w-12 bg-green-500">
-              <svg className="w-6 h-6 text-white fill-current" viewBox="0 0 40 40">
+              <svg
+                className="w-6 h-6 text-white fill-current"
+                viewBox="0 0 40 40"
+              >
                 <path d="M20 3.33331C10.8 3.33331 3.33337 10.8 3.33337 20C3.33337 29.2 10.8 36.6666 20 36.6666C29.2 36.6666 36.6667 29.2 36.6667 20C36.6667 10.8 29.2 3.33331 20 3.33331ZM16.6667 28.3333L8.33337 20L10.6834 17.65L16.6667 23.6166L29.3167 10.9666L31.6667 13.3333L16.6667 28.3333Z"></path>
               </svg>
             </div>
@@ -524,12 +549,22 @@ const Add_origin = () => {
                 <p className="text-sm text-gray-600">{successMessage}</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setShowSuccessToast(false)}
               className="p-2 text-gray-400 hover:text-gray-500"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -539,24 +574,23 @@ const Add_origin = () => {
         <div className="bg-white shadow-sm rounded-md overflow-hidden mb-4 border border-gray-200">
           <div className="bg-blue-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">
-                Add Origin Charges
-              </h2>
-              <p className="text-xs text-gray-600">Enter new charges details</p>
+              <p className="text-sm text-gray-600">
+                Enter new charges details also update charges timely
+              </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-4">
             {/* Location & Shipment Details - Combined into one row */}
             <div className="mb-3">
-              <h3 className="text-sm font-medium text-gray-700 mb-2 pb-1 border-b border-gray-200">
+              <h3 className="text-sm font-medium text-red-600 mb-2 pb-1 border-b border-gray-200">
                 Shipment Information
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 {/* POR */}
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="POR"
                   >
                     Place of Receipt (POR)
@@ -589,7 +623,7 @@ const Add_origin = () => {
                 {/* POL */}
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="POL"
                   >
                     Port of Loading (POL)
@@ -622,7 +656,7 @@ const Add_origin = () => {
                 {/* Container Type */}
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="containerType"
                   >
                     Container Type
@@ -655,7 +689,7 @@ const Add_origin = () => {
                 {/* Shipping Line */}
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="shippingLine"
                   >
                     Shipping Line
@@ -689,7 +723,7 @@ const Add_origin = () => {
 
             {/* Cost Information */}
             <div className="mb-3">
-              <h3 className="text-sm font-medium text-gray-700 mb-2 pb-1 border-b border-gray-200">
+              <h3 className="text-sm font-medium text-red-600 mb-2 pb-1 border-b border-gray-200">
                 Cost Information
               </h3>
 
@@ -719,7 +753,7 @@ const Add_origin = () => {
                 {/* BL Fees */}
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="BLFees"
                   >
                     BL Fees
@@ -753,7 +787,7 @@ const Add_origin = () => {
                 {/* THC */}
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="THC"
                   >
                     THC
@@ -787,7 +821,7 @@ const Add_origin = () => {
                 {/* MUC */}
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="MUC"
                   >
                     MUC
@@ -821,7 +855,7 @@ const Add_origin = () => {
                 {/* TOLL */}
                 <div>
                   <label
-                    className="block text-gray-700 text-xs font-medium mb-1"
+                    className="block text-black text-xs font-medium mb-1"
                     htmlFor="TOLL"
                   >
                     TOLL
@@ -851,7 +885,6 @@ const Add_origin = () => {
                     />
                   </div>
                 </div>
-               
               </div>
             </div>
 
@@ -859,13 +892,31 @@ const Add_origin = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                className={`bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${
+                  isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                }`}
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Saving...
                   </>
@@ -904,7 +955,9 @@ const Add_origin = () => {
                 {shipmentData.length} Records
               </span>
               <span className="text-gray-500 text-xs">
-                Showing {currentEntries.length > 0 ? indexOfFirstEntry + 1 : 0} to {Math.min(indexOfLastEntry, shipmentData.length)} of {shipmentData.length}
+                Showing {currentEntries.length > 0 ? indexOfFirstEntry + 1 : 0}{" "}
+                to {Math.min(indexOfLastEntry, shipmentData.length)} of{" "}
+                {shipmentData.length}
               </span>
             </div>
           </div>
@@ -922,7 +975,7 @@ const Add_origin = () => {
                   <th className="py-3 px-4 text-right">THC</th>
                   <th className="py-3 px-4 text-right">MUC</th>
                   <th className="py-3 px-4 text-right">TOLL</th>
-                  
+
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -1000,7 +1053,6 @@ const Add_origin = () => {
                           ? `${row.toll.currency || "$"} ${row.toll.value}`
                           : `${row.currency || "$"} ${row.toll}`}
                       </td>
-                    
 
                       <td className="py-4 px-4 text-center">
                         <button
@@ -1058,7 +1110,7 @@ const Add_origin = () => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Add pagination controls */}
           {shipmentData.length > entriesPerPage && (
             <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
@@ -1089,13 +1141,22 @@ const Add_origin = () => {
               <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm text-gray-700">
-                    Showing <span className="font-medium">{indexOfFirstEntry + 1}</span> to{" "}
-                    <span className="font-medium">{Math.min(indexOfLastEntry, shipmentData.length)}</span> of{" "}
-                    <span className="font-medium">{shipmentData.length}</span> results
+                    Showing{" "}
+                    <span className="font-medium">{indexOfFirstEntry + 1}</span>{" "}
+                    to{" "}
+                    <span className="font-medium">
+                      {Math.min(indexOfLastEntry, shipmentData.length)}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-medium">{shipmentData.length}</span>{" "}
+                    results
                   </p>
                 </div>
                 <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <nav
+                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                    aria-label="Pagination"
+                  >
                     <button
                       onClick={() => paginate(currentPage - 1)}
                       disabled={currentPage === 1}
@@ -1120,38 +1181,42 @@ const Add_origin = () => {
                         />
                       </svg>
                     </button>
-                    
+
                     {/* Page numbers */}
-                    {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                      let pageNumber;
-                      
-                      // Calculate which page numbers to show (centered around current page)
-                      if (totalPages <= 5) {
-                        pageNumber = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNumber = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNumber = totalPages - 4 + i;
-                      } else {
-                        pageNumber = currentPage - 2 + i;
+                    {Array.from({ length: Math.min(5, totalPages) }).map(
+                      (_, i) => {
+                        let pageNumber;
+
+                        // Calculate which page numbers to show (centered around current page)
+                        if (totalPages <= 5) {
+                          pageNumber = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNumber = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNumber = totalPages - 4 + i;
+                        } else {
+                          pageNumber = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNumber}
+                            onClick={() => paginate(pageNumber)}
+                            aria-current={
+                              currentPage === pageNumber ? "page" : undefined
+                            }
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                              currentPage === pageNumber
+                                ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                            }`}
+                          >
+                            {pageNumber}
+                          </button>
+                        );
                       }
-                      
-                      return (
-                        <button
-                          key={pageNumber}
-                          onClick={() => paginate(pageNumber)}
-                          aria-current={currentPage === pageNumber ? "page" : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                            currentPage === pageNumber
-                              ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                          }`}
-                        >
-                          {pageNumber}
-                        </button>
-                      );
-                    })}
-                    
+                    )}
+
                     <button
                       onClick={() => paginate(currentPage + 1)}
                       disabled={currentPage === totalPages}
@@ -1581,7 +1646,6 @@ const Add_origin = () => {
                       />
                     </div>
                   </div>
-                 
                 </div>
 
                 <div className="flex justify-end mt-6 space-x-3">
@@ -1592,20 +1656,40 @@ const Add_origin = () => {
                       setEditingRecord(null);
                     }}
                     disabled={isUpdating}
-                    className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors ${
+                      isUpdating ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${isUpdating ? 'opacity-75 cursor-not-allowed' : ''}`}
+                    className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${
+                      isUpdating ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
                   >
                     {isUpdating ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Updating...
                       </>

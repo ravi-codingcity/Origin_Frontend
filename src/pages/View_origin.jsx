@@ -11,48 +11,61 @@ const View_origin = () => {
   // Add pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage] = useState(50);
+  // Add state for username filter
+  const [usernameFilter, setUsernameFilter] = useState("");
 
   // Helper function to format monetary values with currency symbol
   const formatCurrency = (cost, itemCurrency = "$") => {
     if (!cost) return `${itemCurrency} 0`;
-    
+
     // Handle object format (with value and currency properties)
     if (typeof cost === "object" && cost !== null) {
       const value = parseFloat(cost.value) || 0;
       const currency = cost.currency || itemCurrency;
-      return `${currency} ${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+      return `${currency} ${value.toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      })}`;
     }
-    
+
     // Handle legacy format (just value with separate currency field)
     const value = parseFloat(cost) || 0;
-    return `${itemCurrency} ${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    return `${itemCurrency} ${value.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
   };
 
   // Fetch all origin form data with debug logging
   useEffect(() => {
     setIsLoading(true);
-    fetch('https://origin-backend-3v3f.onrender.com/api/origin/forms/all')
-      .then(response => {
+    fetch("https://origin-backend-3v3f.onrender.com/api/origin/forms/all")
+      .then((response) => {
         if (!response.ok) {
-          throw new Error(`Network response was not ok (Status: ${response.status})`);
+          throw new Error(
+            `Network response was not ok (Status: ${response.status})`
+          );
         }
         return response.json();
       })
-      .then(data => {
+      .then((data) => {
         console.log("API Response Data:", data); // Debug API response
-        
+
         // Debug log for dates to verify sorting
-        console.log("Dates from response:", data.map(item => ({
-          id: item._id,
-          createdAt: item.createdAt,
-          updatedAt: item.updatedAt
-        })));
-        
+        console.log(
+          "Dates from response:",
+          data.map((item) => ({
+            id: item._id,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+          }))
+        );
+
         setOriginData(data);
         setIsLoading(false);
       })
-      .catch(error => {
-        console.error('Error fetching origin data:', error);
+      .catch((error) => {
+        console.error("Error fetching origin data:", error);
         setError(error.message);
         setIsLoading(false);
       });
@@ -61,13 +74,13 @@ const View_origin = () => {
   // Sort and paginate data
   const sortedData = [...originData].sort((a, b) => {
     // Get dates, with better fallbacks
-    const dateA = a.createdAt || a.updatedAt || a.timestamp || '1970-01-01';
-    const dateB = b.createdAt || b.updatedAt || b.timestamp || '1970-01-01';
-    
+    const dateA = a.createdAt || a.updatedAt || a.timestamp || "1970-01-01";
+    const dateB = b.createdAt || b.updatedAt || b.timestamp || "1970-01-01";
+
     // Create Date objects
     const timeA = new Date(dateA).getTime();
     const timeB = new Date(dateB).getTime();
-    
+
     // Sort by date in descending order (newest first)
     // If dates are the same or invalid, sort by _id to ensure consistent ordering
     if (isNaN(timeA) || isNaN(timeB) || timeA === timeB) {
@@ -75,18 +88,9 @@ const View_origin = () => {
       if (a._id && b._id) return b._id.localeCompare(a._id);
       return 0;
     }
-    
+
     return timeB - timeA;
   });
-
-  // Get current entries for pagination
-  const indexOfLastEntry = currentPage * entriesPerPage;
-  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentEntries = sortedData.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(sortedData.length / entriesPerPage);
-
-  // Function to change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Function to extract username from data
   const getUserName = (item) => {
@@ -96,14 +100,16 @@ const View_origin = () => {
     if (item.createdBy) {
       // Check if createdBy is an object or string
       if (typeof item.createdBy === "object" && item.createdBy !== null) {
-        return item.createdBy.name || 
-               item.createdBy.username || 
-               item.createdBy.email || 
-               "User";
+        return (
+          item.createdBy.name ||
+          item.createdBy.username ||
+          item.createdBy.email ||
+          "User"
+        );
       }
       return item.createdBy;
     }
-    
+
     // Check if name is in user object
     if (item.user) {
       if (typeof item.user === "object") {
@@ -114,37 +120,182 @@ const View_origin = () => {
       }
       return item.user;
     }
-    
+
     return "Unknown";
+  };
+
+  // Extract unique usernames for dropdown
+  const uniqueUsernames = React.useMemo(() => {
+    const usernames = sortedData.map((item) => getUserName(item));
+    return ["", ...new Set(usernames)].sort(); // Add empty option and sort alphabetically
+  }, [sortedData]);
+
+  // Apply filters to data before pagination
+  const filteredData = usernameFilter
+    ? sortedData.filter((item) => {
+        const username = getUserName(item);
+        return username === usernameFilter; // Exact match for dropdown selection
+      })
+    : sortedData;
+
+  // Get current entries for pagination - update to use filtered data
+  const indexOfLastEntry = currentPage * entriesPerPage;
+  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+  const currentEntries = filteredData.slice(
+    indexOfFirstEntry,
+    indexOfLastEntry
+  );
+  const totalPages = Math.ceil(filteredData.length / entriesPerPage);
+
+  // Function to change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    setUsernameFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  // Add function to handle refresh
+  const handleRefresh = () => {
+    setIsLoading(true);
+    fetch("https://origin-backend-3v3f.onrender.com/api/origin/forms/all")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Network response was not ok (Status: ${response.status})`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setOriginData(data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching origin data:", error);
+        setError(error.message);
+        setIsLoading(false);
+      });
   };
 
   return (
     <div>
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Origin/Local Charges</h1>
-        
+      <div className="container mx-auto px-4 py-4"> 
+        <h1 className="text-xl font-bold mb-3 flex items-center">
+          View all India Origin/Local Charges
+          <svg 
+            className="h-5 w-7 ml-2" 
+            viewBox="0 0 900 600" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Saffron band */}
+            <rect width="900" height="200" fill="#FF9933"/>
+            {/* White band */}
+            <rect y="200" width="900" height="200" fill="#FFFFFF"/>
+            {/* Green band */}
+            <rect y="400" width="900" height="200" fill="#138808"/>
+            {/* Navy blue Ashoka Chakra */}
+            <circle cx="450" cy="300" r="50" fill="#000080"/>
+          </svg>
+        </h1> 
+
+
+
+
+
         {/* Error message */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <p><strong>Error:</strong> {error}</p>
+            <p>
+              <strong>Error:</strong> {error}
+            </p>
             <p>Please try again later or contact support.</p>
           </div>
         )}
 
         {/* Loading indicator */}
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="flex justify-center items-center h-48"> {/* Reduced h-64 to h-48 */}
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div> {/* Reduced h-12 w-12 to h-10 w-10 */}
           </div>
         ) : (
           <div>
-            {/* Pagination info */}
-            <div className="mb-4 flex justify-between items-center">
-              <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">{indexOfFirstEntry + 1}</span> to{" "}
-                <span className="font-medium">{Math.min(indexOfLastEntry, originData.length)}</span> of{" "}
-                <span className="font-medium">{originData.length}</span> entries
+            {/* Redesigned filter controls with refresh button */}
+            <div className="mb-3 bg-white p-3 rounded-md shadow-sm"> {/* Reduced mb-4 to mb-3, p-4 to p-3, and shadow to shadow-sm */}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2 w-2/3">
+                  <label
+                    htmlFor="username-filter"
+                    className="text-sm font-medium text-gray-700 whitespace-nowrap"
+                  >
+                    Filter by:
+                  </label>
+                  <select
+                    id="username-filter"
+                    className="block w-full py-1.5 px-2 border border-gray-300 rounded-md text-sm bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={usernameFilter}
+                    onChange={handleFilterChange}
+                  >
+                    <option value="">All Locations</option>
+                    {uniqueUsernames
+                      .filter((name) => name !== "")
+                      .map((username) => (
+                        <option key={username} value={username}>
+                          {username}
+                        </option>
+                      ))}
+                  </select>
+                  
+                  {usernameFilter && (
+                    <button
+                      onClick={() => {
+                        setUsernameFilter("");
+                        setCurrentPage(1);
+                      }}
+                      className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      <svg className="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Clear
+                    </button>
+                  )}
+                </div>
+                
+                <button
+                  onClick={handleRefresh}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-3.5 w-3.5 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  Refresh
+                </button>
+              </div>
+              
+              {usernameFilter && (
+                <div className="mt-1 text-xs text-gray-600">
+                  Showing {filteredData.length} results for "{usernameFilter}"
+                </div>
+              )}
+            </div>
+
+            {/* More compact pagination info */}
+            <div className="mb-2 flex justify-between items-center text-xs">
+              <div className="text-gray-700">
+                Showing {filteredData.length > 0 ? indexOfFirstEntry + 1 : 0} to {Math.min(indexOfLastEntry, filteredData.length)} of {filteredData.length} entries
+                {usernameFilter && <span> (filtered from {sortedData.length})</span>}
               </div>
             </div>
             
@@ -153,16 +304,60 @@ const View_origin = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POR</th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POL</th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Container Type</th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipping Line</th>
-                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">BL Fees</th>
-                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">THC</th>
-                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">MUC</th>
-                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">TOLL</th>
-                   
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      User
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      POR
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      POL
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Container Type
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Shipping Line
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      BL Fees
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      THC
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      MUC
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      TOLL
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -172,10 +367,18 @@ const View_origin = () => {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
                           {getUserName(item)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.por}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.pol}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.container_type}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.shipping_lines}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.por}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.pol}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.container_type}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.shipping_lines}
+                        </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.bl_fees, item.currency)}
                         </td>
@@ -188,12 +391,14 @@ const View_origin = () => {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                           {formatCurrency(item.toll, item.currency)}
                         </td>
-                       
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="10" className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td
+                        colSpan="10"
+                        className="px-6 py-4 text-center text-sm text-gray-500"
+                      >
                         No origin data available
                       </td>
                     </tr>
@@ -201,9 +406,9 @@ const View_origin = () => {
                 </tbody>
               </table>
             </div>
-            
+
             {/* Pagination controls */}
-            {originData.length > entriesPerPage && (
+            {filteredData.length > entriesPerPage && (
               <div className="mt-4 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
@@ -232,13 +437,24 @@ const View_origin = () => {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{indexOfFirstEntry + 1}</span> to{" "}
-                      <span className="font-medium">{Math.min(indexOfLastEntry, originData.length)}</span> of{" "}
-                      <span className="font-medium">{originData.length}</span> results
+                      Showing{" "}
+                      <span className="font-medium">
+                        {indexOfFirstEntry + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(indexOfLastEntry, originData.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">{originData.length}</span>{" "}
+                      results
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
                       <button
                         onClick={() => paginate(currentPage - 1)}
                         disabled={currentPage === 1}
@@ -249,42 +465,56 @@ const View_origin = () => {
                         }`}
                       >
                         <span className="sr-only">Previous</span>
-                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="h-5 w-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
-                      
+
                       {/* Page numbers */}
-                      {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                        let pageNumber;
-                        
-                        // Calculate which page numbers to show (centered around current page)
-                        if (totalPages <= 5) {
-                          pageNumber = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNumber = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNumber = totalPages - 4 + i;
-                        } else {
-                          pageNumber = currentPage - 2 + i;
+                      {Array.from({ length: Math.min(5, totalPages) }).map(
+                        (_, i) => {
+                          let pageNumber;
+
+                          // Calculate which page numbers to show (centered around current page)
+                          if (totalPages <= 5) {
+                            pageNumber = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNumber = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNumber = totalPages - 4 + i;
+                          } else {
+                            pageNumber = currentPage - 2 + i;
+                          }
+
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => paginate(pageNumber)}
+                              aria-current={
+                                currentPage === pageNumber ? "page" : undefined
+                              }
+                              className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                currentPage === pageNumber
+                                  ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                                  : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
                         }
-                        
-                        return (
-                          <button
-                            key={pageNumber}
-                            onClick={() => paginate(pageNumber)}
-                            aria-current={currentPage === pageNumber ? "page" : undefined}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              currentPage === pageNumber
-                                ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                            }`}
-                          >
-                            {pageNumber}
-                          </button>
-                        );
-                      })}
-                      
+                      )}
+
                       <button
                         onClick={() => paginate(currentPage + 1)}
                         disabled={currentPage === totalPages}
@@ -295,8 +525,18 @@ const View_origin = () => {
                         }`}
                       >
                         <span className="sr-only">Next</span>
-                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="h-5 w-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     </nav>
