@@ -13,19 +13,19 @@ const View_origin = () => {
   const [entriesPerPage] = useState(50);
 
   // Helper function to format monetary values with currency symbol
-  const formatCurrency = (cost) => {
-    if (!cost) return "$ 0";
+  const formatCurrency = (cost, itemCurrency = "$") => {
+    if (!cost) return `${itemCurrency} 0`;
     
     // Handle object format (with value and currency properties)
     if (typeof cost === "object" && cost !== null) {
       const value = parseFloat(cost.value) || 0;
-      const currency = cost.currency || "$";
+      const currency = cost.currency || itemCurrency;
       return `${currency} ${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
     }
     
     // Handle legacy format (just value with separate currency field)
     const value = parseFloat(cost) || 0;
-    return `$ ${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    return `${itemCurrency} ${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
   };
 
   // Fetch all origin form data with debug logging
@@ -40,6 +40,14 @@ const View_origin = () => {
       })
       .then(data => {
         console.log("API Response Data:", data); // Debug API response
+        
+        // Debug log for dates to verify sorting
+        console.log("Dates from response:", data.map(item => ({
+          id: item._id,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt
+        })));
+        
         setOriginData(data);
         setIsLoading(false);
       })
@@ -50,12 +58,51 @@ const View_origin = () => {
       });
   }, []);
 
+  // Sort and paginate data
+  const sortedData = [...originData].sort((a, b) => {
+    // Get dates, with better fallbacks
+    const dateA = a.createdAt || a.updatedAt || a.timestamp || '1970-01-01';
+    const dateB = b.createdAt || b.updatedAt || b.timestamp || '1970-01-01';
+    
+    // Create Date objects
+    const timeA = new Date(dateA).getTime();
+    const timeB = new Date(dateB).getTime();
+    
+    // Sort by date in descending order (newest first)
+    // If dates are the same or invalid, sort by _id to ensure consistent ordering
+    if (isNaN(timeA) || isNaN(timeB) || timeA === timeB) {
+      // Secondary sort by ID if available (newer records typically have higher IDs)
+      if (a._id && b._id) return b._id.localeCompare(a._id);
+      return 0;
+    }
+    
+    return timeB - timeA;
+  });
+
+  // Get current entries for pagination
+  const indexOfLastEntry = currentPage * entriesPerPage;
+  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+  const currentEntries = sortedData.slice(indexOfFirstEntry, indexOfLastEntry);
+  const totalPages = Math.ceil(sortedData.length / entriesPerPage);
+
+  // Function to change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   // Function to extract username from data
   const getUserName = (item) => {
     // Try multiple possible locations for the username in API response
     if (item.name) return item.name;
     if (item.userName) return item.userName;
-    if (item.createdBy) return item.createdBy;
+    if (item.createdBy) {
+      // Check if createdBy is an object or string
+      if (typeof item.createdBy === "object" && item.createdBy !== null) {
+        return item.createdBy.name || 
+               item.createdBy.username || 
+               item.createdBy.email || 
+               "User";
+      }
+      return item.createdBy;
+    }
     
     // Check if name is in user object
     if (item.user) {
@@ -70,15 +117,6 @@ const View_origin = () => {
     
     return "Unknown";
   };
-
-  // Get current entries for pagination
-  const indexOfLastEntry = currentPage * entriesPerPage;
-  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentEntries = originData.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(originData.length / entriesPerPage);
-
-  // Function to change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div>
@@ -139,16 +177,16 @@ const View_origin = () => {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.container_type}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{item.shipping_lines}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                          {formatCurrency(item.bl_fees)}
+                          {formatCurrency(item.bl_fees, item.currency)}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                          {formatCurrency(item.thc)}
+                          {formatCurrency(item.thc, item.currency)}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                          {formatCurrency(item.muc)}
+                          {formatCurrency(item.muc, item.currency)}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                          {formatCurrency(item.toll)}
+                          {formatCurrency(item.toll, item.currency)}
                         </td>
                        
                       </tr>

@@ -19,7 +19,10 @@ function View_rail_freight() {
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return "-";
 
-    return `${currency} ${numValue.toLocaleString(undefined, {
+    // Make sure we're using the correct currency symbol
+    const currencySymbol = currency || "₹";
+
+    return `${currencySymbol} ${numValue.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     })}`;
@@ -68,6 +71,8 @@ function View_rail_freight() {
       })
       .then((data) => {
         console.log("Fetched rail freight data:", data);
+        // Debug log to check currencies
+        console.log("Currencies from server:", data.map(item => item.currency));
         setRailFreightData(data);
         setIsLoading(false);
       })
@@ -340,7 +345,7 @@ function View_rail_freight() {
                       >
                         <span className="sr-only">Next</span>
                         <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4-4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                         </svg>
                       </button>
                     </nav>
@@ -356,3 +361,4 @@ function View_rail_freight() {
 }
 
 export default View_rail_freight;
+

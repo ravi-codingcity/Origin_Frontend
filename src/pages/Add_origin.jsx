@@ -72,6 +72,12 @@ const Add_origin = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage] = useState(30);
 
+  // Add states for loading and success messages
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -119,10 +125,22 @@ const Add_origin = () => {
     }));
   };
 
-  // Handle form submission
+  // Show success toast with auto-dismiss
+  const displaySuccessMessage = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessToast(true);
+    
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+      setShowSuccessToast(false);
+    }, 3000);
+  };
+
+  // Handle form submission with loading state
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage(""); // Clear any previous errors
+    setIsSubmitting(true); // Start loading animation
 
     // Validate form before submission
     if (
@@ -132,6 +150,7 @@ const Add_origin = () => {
       !formData.shipping_lines
     ) {
       setErrorMessage("Please fill in all required fields");
+      setIsSubmitting(false);
       return;
     }
 
@@ -198,11 +217,13 @@ const Add_origin = () => {
         thc: { value: "", currency: "₹" },
         muc: { value: "", currency: "₹" },
         toll: { value: "", currency: "₹" },
-       
       });
 
       // Fetch updated data
       fetchShipmentData();
+      
+      // Show success message
+      displaySuccessMessage("Entry saved successfully!");
     } catch (error) {
       console.error("Form submission error:", error);
 
@@ -263,22 +284,29 @@ const Add_origin = () => {
 
         // Fetch updated data
         fetchShipmentData();
+        
+        // Show success message
+        displaySuccessMessage("Entry saved successfully!");
       } catch (fallbackError) {
         console.error("Both submission attempts failed:", fallbackError);
         setErrorMessage(`Form submission failed: ${fallbackError.message}`);
       }
+    } finally {
+      setIsSubmitting(false); // End loading animation
     }
   };
 
-  // Handle edit form submission
+  // Handle edit form submission with loading state
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setIsUpdating(true); // Start loading animation
 
     // Check if we have a valid ID
     const recordId = editingRecord._id || editingRecord.id;
     if (!recordId) {
       setErrorMessage("Cannot update record: Missing ID");
+      setIsUpdating(false);
       return;
     }
 
@@ -286,6 +314,7 @@ const Add_origin = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setErrorMessage("Authentication required. Please log in again.");
+      setIsUpdating(false);
       return;
     }
 
@@ -352,10 +381,14 @@ const Add_origin = () => {
       setIsEditModalOpen(false);
       setEditingRecord(null);
       fetchShipmentData();
-      alert("Origin charge updated successfully!");
+      
+      // Show success message
+      displaySuccessMessage("Entry updated successfully!");
     } catch (error) {
       console.error("Error updating record:", error);
       setErrorMessage(`Failed to update record: ${error.message}`);
+    } finally {
+      setIsUpdating(false); // End loading animation
     }
   };
 
@@ -474,6 +507,31 @@ const Add_origin = () => {
                 <strong>Error:</strong> {errorMessage}
               </span>
             </div>
+          </div>
+        )}
+
+        {/* Success message toast */}
+        {showSuccessToast && (
+          <div className="fixed top-4 right-4 flex max-w-sm w-full mx-auto overflow-hidden bg-white rounded-lg shadow-md z-50 animate-fade-in-down">
+            <div className="flex items-center justify-center w-12 bg-green-500">
+              <svg className="w-6 h-6 text-white fill-current" viewBox="0 0 40 40">
+                <path d="M20 3.33331C10.8 3.33331 3.33337 10.8 3.33337 20C3.33337 29.2 10.8 36.6666 20 36.6666C29.2 36.6666 36.6667 29.2 36.6667 20C36.6667 10.8 29.2 3.33331 20 3.33331ZM16.6667 28.3333L8.33337 20L10.6834 17.65L16.6667 23.6166L29.3167 10.9666L31.6667 13.3333L16.6667 28.3333Z"></path>
+              </svg>
+            </div>
+            <div className="px-4 py-2 -mx-3">
+              <div className="mx-3">
+                <span className="font-semibold text-green-500">Success</span>
+                <p className="text-sm text-gray-600">{successMessage}</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowSuccessToast(false)}
+              className="p-2 text-gray-400 hover:text-gray-500"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         )}
 
@@ -800,23 +858,36 @@ const Add_origin = () => {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center"
+                disabled={isSubmitting}
+                className={`bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                Add Charges
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    Add Charges
+                  </>
+                )}
               </button>
             </div>
           </form>
@@ -907,29 +978,29 @@ const Add_origin = () => {
                       <td className="py-4 px-4 text-sm text-gray-900">
                         {row.shipping_lines}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {typeof row.bl_fees === "object" && row.bl_fees !== null
                           ? `${row.bl_fees.currency || "$"} ${
                               row.bl_fees.value
                             }`
                           : `${row.currency || "$"} ${row.bl_fees}`}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {typeof row.thc === "object" && row.thc !== null
                           ? `${row.thc.currency || "$"} ${row.thc.value}`
                           : `${row.currency || "$"} ${row.thc}`}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {typeof row.muc === "object" && row.muc !== null
                           ? `${row.muc.currency || "$"} ${row.muc.value}`
                           : `${row.currency || "$"} ${row.muc}`}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
                         {typeof row.toll === "object" && row.toll !== null
                           ? `${row.toll.currency || "$"} ${row.toll.value}`
                           : `${row.currency || "$"} ${row.toll}`}
                       </td>
-                     
+                    
 
                       <td className="py-4 px-4 text-center">
                         <button
@@ -1112,7 +1183,7 @@ const Add_origin = () => {
           )}
         </div>
 
-        {/* Edit Modal - Update to handle cost fields with currencies */}
+        {/* Edit Modal - updated with loading state */}
         {isEditModalOpen && editingRecord && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl max-h-screen overflow-y-auto">
@@ -1252,7 +1323,7 @@ const Add_origin = () => {
                     </label>
                     <div className="relative flex">
                       <select
-                        className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1"
+                        className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 "
                         value={
                           typeof editingRecord.bl_fees === "object" &&
                           editingRecord.bl_fees !== null
@@ -1520,15 +1591,27 @@ const Add_origin = () => {
                       setIsEditModalOpen(false);
                       setEditingRecord(null);
                     }}
-                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors"
+                    disabled={isUpdating}
+                    className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+                    disabled={isUpdating}
+                    className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${isUpdating ? 'opacity-75 cursor-not-allowed' : ''}`}
                   >
-                    Save Changes
+                    {isUpdating ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Updating...
+                      </>
+                    ) : (
+                      "Save Changes"
+                    )}
                   </button>
                 </div>
               </form>

@@ -66,6 +66,12 @@ const Add_rail_freight = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage] = useState(30);
 
+  // Add states for loading and success messages
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+
   // Determine which weight fields to show based on container type
   const showWeightFields = () => {
     if (formData.container_type.includes("20")) {
@@ -128,10 +134,22 @@ const Add_rail_freight = () => {
     }));
   };
 
-  // Handle form submission
+  // Show success toast with auto-dismiss
+  const displaySuccessMessage = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessToast(true);
+
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+      setShowSuccessToast(false);
+    }, 3000);
+  };
+
+  // Handle form submission with loading state
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setIsSubmitting(true); // Start loading animation
 
     if (
       !formData.por ||
@@ -140,6 +158,7 @@ const Add_rail_freight = () => {
       !formData.shipping_lines
     ) {
       setErrorMessage("Please fill in all required fields");
+      setIsSubmitting(false);
       return;
     }
 
@@ -215,12 +234,15 @@ const Add_rail_freight = () => {
       });
 
       fetchRailFreightData();
-
       setErrorMessage("");
-      alert("Rail freight charge added successfully!");
+
+      // Show success message toast instead of alert
+      displaySuccessMessage("Rail freight charge added successfully!");
     } catch (error) {
       console.error("Form submission error:", error);
       setErrorMessage(`Form submission failed: ${error.message}`);
+    } finally {
+      setIsSubmitting(false); // End loading animation
     }
   };
 
@@ -273,20 +295,23 @@ const Add_rail_freight = () => {
     }));
   };
 
-  // Handle edit form submission
+  // Handle edit form submission with loading state
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setIsUpdating(true); // Start loading animation
 
     const recordId = editingRecord._id || editingRecord.id;
     if (!recordId) {
       setErrorMessage("Cannot update record: Missing ID");
+      setIsUpdating(false);
       return;
     }
 
     const token = localStorage.getItem("token");
     if (!token) {
       setErrorMessage("Authentication required. Please log in again.");
+      setIsUpdating(false);
       return;
     }
 
@@ -339,10 +364,14 @@ const Add_rail_freight = () => {
       setIsEditModalOpen(false);
       setEditingRecord(null);
       fetchRailFreightData();
-      alert("Rail freight charge updated successfully!");
+
+      // Show success message toast instead of alert
+      displaySuccessMessage("Rail freight charge updated successfully!");
     } catch (error) {
       console.error("Error updating record:", error);
       setErrorMessage(`Failed to update record: ${error.message}`);
+    } finally {
+      setIsUpdating(false); // End loading animation
     }
   };
 
@@ -428,6 +457,41 @@ const Add_rail_freight = () => {
             Refresh
           </button>
         </div>
+
+        {/* Success message toast */}
+        {showSuccessToast && (
+          <div className="fixed top-4 right-4 flex max-w-sm w-full mx-auto overflow-hidden bg-white rounded-lg shadow-md z-50 animate-fade-in-down">
+            <div className="flex items-center justify-center w-12 bg-green-500">
+              <svg className="w-6 h-6 text-white fill-current" viewBox="0 0 40 40">
+                <path d="M20 3.33331C10.8 3.33331 3.33337 10.8 3.33337 20C3.33337 29.2 10.8 36.6666 20 36.6666C29.2 36.6666 36.6667 29.2 36.6667 20C36.6667 10.8 29.2 3.33331 20 3.33331ZM16.6667 28.3333L8.33337 20L10.6834 17.65L16.6667 23.6166L29.3167 10.9666L31.6667 13.3333L16.6667 28.3333Z"></path>
+              </svg>
+            </div>
+            <div className="px-4 py-2 -mx-3">
+              <div className="mx-3">
+                <span className="font-semibold text-green-500">Success</span>
+                <p className="text-sm text-gray-600">{successMessage}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowSuccessToast(false)}
+              className="p-2 text-gray-400 hover:text-gray-500"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
 
         {errorMessage && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 mb-4 rounded-md text-sm">
@@ -805,23 +869,52 @@ const Add_rail_freight = () => {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center"
+                disabled={isSubmitting}
+                className={`bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                Add Rail Freight
+                {isSubmitting ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    Add Rail Freight
+                  </>
+                )}
               </button>
             </div>
           </form>
@@ -1022,11 +1115,11 @@ const Add_rail_freight = () => {
                         />
                       </svg>
                     </button>
-                    
+
                     {/* Page numbers */}
                     {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
                       let pageNumber;
-                      
+
                       // Calculate which page numbers to show (centered around current page)
                       if (totalPages <= 5) {
                         pageNumber = i + 1;
@@ -1037,7 +1130,7 @@ const Add_rail_freight = () => {
                       } else {
                         pageNumber = currentPage - 2 + i;
                       }
-                      
+
                       return (
                         <button
                           key={pageNumber}
@@ -1053,7 +1146,7 @@ const Add_rail_freight = () => {
                         </button>
                       );
                     })}
-                    
+
                     <button
                       onClick={() => paginate(currentPage + 1)}
                       disabled={currentPage === totalPages}
@@ -1364,15 +1457,43 @@ const Add_rail_freight = () => {
                       setIsEditModalOpen(false);
                       setEditingRecord(null);
                     }}
-                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors"
+                    disabled={isUpdating}
+                    className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+                    disabled={isUpdating}
+                    className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${isUpdating ? 'opacity-75 cursor-not-allowed' : ''}`}
                   >
-                    Save Changes
+                    {isUpdating ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Updating...
+                      </>
+                    ) : (
+                      "Save Changes"
+                    )}
                   </button>
                 </div>
               </form>
