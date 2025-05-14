@@ -532,7 +532,7 @@ const Add_rail_freight = () => {
             <div>
               
               <p className="text-sm text-gray-600">
-                Enter new rail freight charge details also update charges timely
+                Please enter new charge details and ensure timely updates.
               </p>
             </div>
           </div>

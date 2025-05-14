@@ -575,7 +575,7 @@ const Add_origin = () => {
           <div className="bg-blue-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
             <div>
               <p className="text-sm text-gray-600">
-                Enter new charges details also update charges timely
+                Please enter new charge details and ensure timely updates.
               </p>
             </div>
           </div>
