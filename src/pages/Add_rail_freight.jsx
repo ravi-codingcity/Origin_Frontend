@@ -986,20 +986,20 @@ const Add_rail_freight = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
+            <table className="min-w-full bg-white border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <th className="py-3 px-4 text-left">User</th>
-                  <th className="py-3 px-4 text-left">POR</th>
-                  <th className="py-3 px-4 text-left">POL</th>
-                  <th className="py-3 px-4 text-left">Container Type</th>
-                  <th className="py-3 px-4 text-left">Shipping Line</th>
-                  <th className="py-3 px-4 text-right">20ft (0-10 Ton)</th>
-                  <th className="py-3 px-4 text-right">20ft (10-20 Ton)</th>
-                  <th className="py-3 px-4 text-right">20ft (20-26 Ton)</th>
-                  <th className="py-3 px-4 text-right">20ft (26+ Ton)</th>
-                  <th className="py-3 px-4 text-right">40ft (10-20 Ton)</th>
-                  <th className="py-3 px-4 text-right">40ft (20+ Ton)</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">User</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">POR</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">POL</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">Container Type</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">Shipping Line</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">20ft (0-10 Ton)</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">20ft (10-20 Ton)</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">20ft (20-26 Ton)</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">20ft (26+ Ton)</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">40ft (10-20 Ton)</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">40ft (20+ Ton)</th>
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -1007,47 +1007,47 @@ const Add_rail_freight = () => {
                 {currentEntries.length > 0 ? (
                   currentEntries.map((row, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="py-4 px-4 text-sm text-red-600 font-medium">
+                      <td className="py-4 px-4 text-sm text-red-600 font-medium border-r border-gray-200">
                         {getUserName(row)}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
                         {row.por}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
                         {row.pol}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
                         {row.container_type}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
                         {row.shipping_lines}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight20ft0_10
                           ? `${row.currency} ${row.weight20ft0_10}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight20ft10_20
                           ? `${row.currency} ${row.weight20ft10_20}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight20ft20_26
                           ? `${row.currency} ${row.weight20ft20_26}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight20ft26Plus
                           ? `${row.currency} ${row.weight20ft26Plus}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight40ft10_20
                           ? `${row.currency} ${row.weight40ft10_20}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight40ft20Plus
                           ? `${row.currency} ${row.weight40ft20Plus}`
                           : "-"}

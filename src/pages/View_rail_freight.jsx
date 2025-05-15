@@ -298,62 +298,68 @@ function View_rail_freight() {
 
             {/* Responsive table */}
             <div className="overflow-x-auto bg-white rounded-lg shadow overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 border-collapse">
                 <thead className="bg-gray-50">
                   <tr>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
                       User
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
                       POR
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
                       POL
                     </th>
 
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
                       Container Type
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
                       Shipping Line
                     </th>
 
                     <th
                       scope="col"
-                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
                       20ft (0-10 Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
                       20ft (10-20 Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
-                      20ft (20+ Ton)
+                      20ft (20-26 Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
+                    >
+                      20ft (26+ Ton)
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
                     >
                       40ft (10-20 Ton)
                     </th>
@@ -369,33 +375,36 @@ function View_rail_freight() {
                   {currentEntries.length > 0 ? (
                     currentEntries.map((item, index) => (
                       <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-red-600 font-medium border-r border-gray-200">
                           {getUserName(item)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
                           {item.por}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
                           {item.pol}
                         </td>
 
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
                           {item.container_type}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
                           {item.shipping_lines}
                         </td>
 
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                           {formatCurrency(item.weight20ft0_10, item.currency)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                           {formatCurrency(item.weight20ft10_20, item.currency)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                          {formatCurrency(item.weight20ft20Plus, item.currency)}
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium border-r border-gray-200">
+                          {formatCurrency(item.weight20ft20_26, item.currency)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium border-r border-gray-200">
+                          {formatCurrency(item.weight20ft26Plus, item.currency)}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                           {formatCurrency(item.weight40ft10_20, item.currency)}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">

@@ -963,19 +963,18 @@ const Add_origin = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
+            <table className="min-w-full bg-white border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <th className="py-3 px-4 text-left">User</th>
-                  <th className="py-3 px-4 text-left">POR</th>
-                  <th className="py-3 px-4 text-left">POL</th>
-                  <th className="py-3 px-4 text-left">Container Type</th>
-                  <th className="py-3 px-4 text-left">Shipping Line</th>
-                  <th className="py-3 px-4 text-right">BL Fees</th>
-                  <th className="py-3 px-4 text-right">THC</th>
-                  <th className="py-3 px-4 text-right">MUC</th>
-                  <th className="py-3 px-4 text-right">TOLL</th>
-
+                  <th className="py-3 px-4 text-left border-r border-gray-200">User</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">POR</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">POL</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">Container Type</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">Shipping Line</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">BL Fees</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">THC</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">MUC</th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">TOLL</th>
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -983,7 +982,7 @@ const Add_origin = () => {
                 {currentEntries.length > 0 ? (
                   currentEntries.map((row, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="py-4 px-4 text-sm text-red-600 font-medium">
+                      <td className="py-4 px-4 text-sm text-red-600 font-medium border-r border-gray-200">
                         {(() => {
                           // Debug the structure of each row to see available fields
                           console.log("Row data for username:", row);
@@ -1019,36 +1018,36 @@ const Add_origin = () => {
                           }
                         })()}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
                         {row.por}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
                         {row.pol}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
                         {row.container_type}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
                         {row.shipping_lines}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {typeof row.bl_fees === "object" && row.bl_fees !== null
                           ? `${row.bl_fees.currency || "$"} ${
                               row.bl_fees.value
                             }`
                           : `${row.currency || "$"} ${row.bl_fees}`}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {typeof row.thc === "object" && row.thc !== null
                           ? `${row.thc.currency || "$"} ${row.thc.value}`
                           : `${row.currency || "$"} ${row.thc}`}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {typeof row.muc === "object" && row.muc !== null
                           ? `${row.muc.currency || "$"} ${row.muc.value}`
                           : `${row.currency || "$"} ${row.muc}`}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {typeof row.toll === "object" && row.toll !== null
                           ? `${row.toll.currency || "$"} ${row.toll.value}`
                           : `${row.currency || "$"} ${row.toll}`}
