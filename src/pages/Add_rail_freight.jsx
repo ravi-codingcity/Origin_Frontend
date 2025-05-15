@@ -46,7 +46,8 @@ const Add_rail_freight = () => {
     shipping_lines: "",
     weight20ft0_10: { value: "", currency: "₹" },
     weight20ft10_20: { value: "", currency: "₹" },
-    weight20ft20Plus: { value: "", currency: "₹" },
+    weight20ft20_26: { value: "", currency: "₹" }, // Fixed field name from weight20ft20Plus to weight20ft20_26
+    weight20ft26Plus: { value: "", currency: "₹" }, // Added missing field
     weight40ft10_20: { value: "", currency: "₹" },
     weight40ft20Plus: { value: "", currency: "₹" },
     currency: "₹",
@@ -178,8 +179,10 @@ const Add_rail_freight = () => {
           parseFloat(formData.weight20ft0_10.value) || 0;
         formDataToSend.weight20ft10_20 =
           parseFloat(formData.weight20ft10_20.value) || 0;
-        formDataToSend.weight20ft20Plus =
-          parseFloat(formData.weight20ft20Plus.value) || 0;
+        formDataToSend.weight20ft20_26 =
+          parseFloat(formData.weight20ft20_26?.value) || 0;
+        formDataToSend.weight20ft26Plus =
+          parseFloat(formData.weight20ft26Plus?.value) || 0;
       } else if (formData.container_type.includes("40")) {
         formDataToSend.weight40ft10_20 =
           parseFloat(formData.weight40ft10_20.value) || 0;
