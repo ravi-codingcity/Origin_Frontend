@@ -229,7 +229,8 @@ const Add_rail_freight = () => {
         currency: formData.currency,
         weight20ft0_10: { value: "", currency: formData.currency },
         weight20ft10_20: { value: "", currency: formData.currency },
-        weight20ft20Plus: { value: "", currency: formData.currency },
+        weight20ft20_26: { value: "", currency: formData.currency },
+        weight20ft26Plus: { value: "", currency: formData.currency },
         weight40ft10_20: { value: "", currency: formData.currency },
         weight40ft20Plus: { value: "", currency: formData.currency },
       });
@@ -336,8 +337,10 @@ const Add_rail_freight = () => {
           parseFloat(editingRecord.weight20ft0_10) || 0;
         updatedRecord.weight20ft10_20 =
           parseFloat(editingRecord.weight20ft10_20) || 0;
-        updatedRecord.weight20ft20Plus =
-          parseFloat(editingRecord.weight20ft20Plus) || 0;
+        updatedRecord.weight20ft20_26 =
+          parseFloat(editingRecord.weight20ft20_26) || 0;
+        updatedRecord.weight20ft26Plus =
+          parseFloat(editingRecord.weight20ft26Plus) || 0;
       } else if (editingRecord.container_type.includes("40")) {
         updatedRecord.weight40ft10_20 =
           parseFloat(editingRecord.weight40ft10_20) || 0;
@@ -421,7 +424,10 @@ const Add_rail_freight = () => {
   // Sort and paginate data
   const sortedData = [...railFreightData].sort((a, b) => {
     // Sort by createdAt date in descending order (newest first)
-    return new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0);
+    return (
+      new Date(b.createdAt || b.updatedAt || 0) -
+      new Date(a.createdAt || a.updatedAt || 0)
+    );
   });
 
   // Get current entries for pagination
@@ -439,7 +445,7 @@ const Add_rail_freight = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold text-gray-800">
-          Add Rail Freight Charges
+            Add Rail Freight Charges
           </h1>
           <button
             onClick={fetchRailFreightData}
@@ -472,7 +478,10 @@ const Add_rail_freight = () => {
         {showSuccessToast && (
           <div className="fixed top-4 right-4 flex max-w-sm w-full mx-auto overflow-hidden bg-white rounded-lg shadow-md z-50 animate-fade-in-down">
             <div className="flex items-center justify-center w-12 bg-green-500">
-              <svg className="w-6 h-6 text-white fill-current" viewBox="0 0 40 40">
+              <svg
+                className="w-6 h-6 text-white fill-current"
+                viewBox="0 0 40 40"
+              >
                 <path d="M20 3.33331C10.8 3.33331 3.33337 10.8 3.33337 20C3.33337 29.2 10.8 36.6666 20 36.6666C29.2 36.6666 36.6667 29.2 36.6667 20C36.6667 10.8 29.2 3.33331 20 3.33331ZM16.6667 28.3333L8.33337 20L10.6834 17.65L16.6667 23.6166L29.3167 10.9666L31.6667 13.3333L16.6667 28.3333Z"></path>
               </svg>
             </div>
@@ -530,7 +539,6 @@ const Add_rail_freight = () => {
         <div className="bg-white shadow-sm rounded-md overflow-hidden mb-4 border border-gray-200">
           <div className="bg-blue-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
             <div>
-              
               <p className="text-sm text-gray-600">
                 Please enter new charge details and ensure timely updates.
               </p>
@@ -716,8 +724,12 @@ const Add_rail_freight = () => {
                           ...prev.weight20ft10_20,
                           currency: newCurrency,
                         },
-                        weight20ft20Plus: {
-                          ...prev.weight20ft20Plus,
+                        weight20ft20_26: {
+                          ...prev.weight20ft20_26,
+                          currency: newCurrency,
+                        },
+                        weight20ft26Plus: {
+                          ...prev.weight20ft26Plus,
                           currency: newCurrency,
                         },
                         weight40ft10_20: {
@@ -747,7 +759,7 @@ const Add_rail_freight = () => {
                   Weight-based Charges - {showWeightFields()}
                 </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                   {showWeightFields() === "20ft" && (
                     <>
                       <div>
@@ -799,9 +811,9 @@ const Add_rail_freight = () => {
                       <div>
                         <label
                           className="block text-black text-xs font-medium mb-1"
-                          htmlFor="weight20ft20Plus"
+                          htmlFor="weight20ft20_26"
                         >
-                          20ft (20+ Ton)
+                          20ft (20-26 Ton)
                         </label>
                         <div className="relative flex">
                           <div className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 flex items-center justify-center">
@@ -810,10 +822,33 @@ const Add_rail_freight = () => {
                           <input
                             required
                             className="shadow-sm border border-gray-300 rounded-md w-full py-1.5 pl-10 pr-2 text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                            id="weight20ft20Plus"
+                            id="weight20ft20_26"
                             type="number"
-                            name="weight20ft20Plus"
-                            value={formData.weight20ft20Plus.value}
+                            name="weight20ft20_26"
+                            value={formData.weight20ft20_26.value}
+                            onChange={handleChange}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          className="block text-black text-xs font-medium mb-1"
+                          htmlFor="weight20ft26Plus"
+                        >
+                          20ft (26+ Ton)
+                        </label>
+                        <div className="relative flex">
+                          <div className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 flex items-center justify-center">
+                            {formData.currency}
+                          </div>
+                          <input
+                            required
+                            className="shadow-sm border border-gray-300 rounded-md w-full py-1.5 pl-10 pr-2 text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                            id="weight20ft26Plus"
+                            type="number"
+                            name="weight20ft26Plus"
+                            value={formData.weight20ft26Plus.value}
                             onChange={handleChange}
                           />
                         </div>
@@ -878,7 +913,9 @@ const Add_rail_freight = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                className={`bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${
+                  isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                }`}
               >
                 {isSubmitting ? (
                   <>
@@ -938,7 +975,9 @@ const Add_rail_freight = () => {
                 {railFreightData.length} Records
               </span>
               <span className="text-gray-500 text-xs">
-                Showing {currentEntries.length > 0 ? indexOfFirstEntry + 1 : 0} to {Math.min(indexOfLastEntry, railFreightData.length)} of {railFreightData.length}
+                Showing {currentEntries.length > 0 ? indexOfFirstEntry + 1 : 0}{" "}
+                to {Math.min(indexOfLastEntry, railFreightData.length)} of{" "}
+                {railFreightData.length}
               </span>
             </div>
           </div>
@@ -954,7 +993,8 @@ const Add_rail_freight = () => {
                   <th className="py-3 px-4 text-left">Shipping Line</th>
                   <th className="py-3 px-4 text-right">20ft (0-10 Ton)</th>
                   <th className="py-3 px-4 text-right">20ft (10-20 Ton)</th>
-                  <th className="py-3 px-4 text-right">20ft (20+ Ton)</th>
+                  <th className="py-3 px-4 text-right">20ft (20-26 Ton)</th>
+                  <th className="py-3 px-4 text-right">20ft (26+ Ton)</th>
                   <th className="py-3 px-4 text-right">40ft (10-20 Ton)</th>
                   <th className="py-3 px-4 text-right">40ft (20+ Ton)</th>
                   <th className="py-3 px-4 text-center">Actions</th>
@@ -990,8 +1030,13 @@ const Add_rail_freight = () => {
                           : "-"}
                       </td>
                       <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
-                        {row.weight20ft20Plus
-                          ? `${row.currency} ${row.weight20ft20Plus}`
+                        {row.weight20ft20_26
+                          ? `${row.currency} ${row.weight20ft20_26}`
+                          : "-"}
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                        {row.weight20ft26Plus
+                          ? `${row.currency} ${row.weight20ft26Plus}`
                           : "-"}
                       </td>
                       <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium">
@@ -1092,13 +1137,24 @@ const Add_rail_freight = () => {
               <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm text-gray-700">
-                    Showing <span className="font-medium">{indexOfFirstEntry + 1}</span> to{" "}
-                    <span className="font-medium">{Math.min(indexOfLastEntry, railFreightData.length)}</span> of{" "}
-                    <span className="font-medium">{railFreightData.length}</span> results
+                    Showing{" "}
+                    <span className="font-medium">{indexOfFirstEntry + 1}</span>{" "}
+                    to{" "}
+                    <span className="font-medium">
+                      {Math.min(indexOfLastEntry, railFreightData.length)}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-medium">
+                      {railFreightData.length}
+                    </span>{" "}
+                    results
                   </p>
                 </div>
                 <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <nav
+                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                    aria-label="Pagination"
+                  >
                     <button
                       onClick={() => paginate(currentPage - 1)}
                       disabled={currentPage === 1}
@@ -1125,35 +1181,39 @@ const Add_rail_freight = () => {
                     </button>
 
                     {/* Page numbers */}
-                    {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                      let pageNumber;
+                    {Array.from({ length: Math.min(5, totalPages) }).map(
+                      (_, i) => {
+                        let pageNumber;
 
-                      // Calculate which page numbers to show (centered around current page)
-                      if (totalPages <= 5) {
-                        pageNumber = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNumber = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNumber = totalPages - 4 + i;
-                      } else {
-                        pageNumber = currentPage - 2 + i;
+                        // Calculate which page numbers to show (centered around current page)
+                        if (totalPages <= 5) {
+                          pageNumber = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNumber = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNumber = totalPages - 4 + i;
+                        } else {
+                          pageNumber = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNumber}
+                            onClick={() => paginate(pageNumber)}
+                            aria-current={
+                              currentPage === pageNumber ? "page" : undefined
+                            }
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                              currentPage === pageNumber
+                                ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                            }`}
+                          >
+                            {pageNumber}
+                          </button>
+                        );
                       }
-
-                      return (
-                        <button
-                          key={pageNumber}
-                          onClick={() => paginate(pageNumber)}
-                          aria-current={currentPage === pageNumber ? "page" : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                            currentPage === pageNumber
-                              ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                          }`}
-                        >
-                          {pageNumber}
-                        </button>
-                      );
-                    })}
+                    )}
 
                     <button
                       onClick={() => paginate(currentPage + 1)}
@@ -1400,16 +1460,32 @@ const Add_rail_freight = () => {
                         <div className="mb-3">
                           <label
                             className="block text-gray-700 text-sm font-bold mb-2"
-                            htmlFor="edit-weight20ft20Plus"
+                            htmlFor="edit-weight20ft20_26"
                           >
-                            20ft (20+ Ton)
+                            20ft (20-26 Ton)
                           </label>
                           <input
                             type="number"
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            id="edit-weight20ft20Plus"
-                            name="weight20ft20Plus"
-                            value={editingRecord.weight20ft20Plus || 0}
+                            id="edit-weight20ft20_26"
+                            name="weight20ft20_26"
+                            value={editingRecord.weight20ft20_26 || 0}
+                            onChange={handleEditFormChange}
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label
+                            className="block text-gray-700 text-sm font-bold mb-2"
+                            htmlFor="edit-weight20ft26Plus"
+                          >
+                            20ft (26+ Ton)
+                          </label>
+                          <input
+                            type="number"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="edit-weight20ft26Plus"
+                            name="weight20ft26Plus"
+                            value={editingRecord.weight20ft26Plus || 0}
                             onChange={handleEditFormChange}
                           />
                         </div>
@@ -1466,14 +1542,18 @@ const Add_rail_freight = () => {
                       setEditingRecord(null);
                     }}
                     disabled={isUpdating}
-                    className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors ${
+                      isUpdating ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${isUpdating ? 'opacity-75 cursor-not-allowed' : ''}`}
+                    className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center ${
+                      isUpdating ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
                   >
                     {isUpdating ? (
                       <>
