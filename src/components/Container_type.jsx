@@ -12,8 +12,12 @@ export const getContainerTypeOptions = () => {
     "20ft RF",
     "40ft RF",
     "40ft H.Q-RF",
-    "20-OT-In",
-    "40-OT-In",
+    "20ft OT-In",
+    "40ft OT-In",
+    "20ft OT-Out",
+    "40ft OT-Out",
+    "20ft FR",
+    "40ft FR"
   ];
 };
 
