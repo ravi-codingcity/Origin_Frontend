@@ -756,7 +756,7 @@ const Add_origin = () => {
                     className="block text-black text-xs font-medium mb-1"
                     htmlFor="BLFees"
                   >
-                    BL Fees
+                    BL Fees (Per BL)
                   </label>
                   <div className="relative flex">
                     <select
@@ -790,7 +790,7 @@ const Add_origin = () => {
                     className="block text-black text-xs font-medium mb-1"
                     htmlFor="THC"
                   >
-                    THC
+                    THC (Per Container)
                   </label>
                   <div className="relative flex">
                     <select
@@ -824,7 +824,7 @@ const Add_origin = () => {
                     className="block text-black text-xs font-medium mb-1"
                     htmlFor="MUC"
                   >
-                    MUC
+                    MUC (Per BL)
                   </label>
                   <div className="relative flex">
                     <select
@@ -858,7 +858,7 @@ const Add_origin = () => {
                     className="block text-black text-xs font-medium mb-1"
                     htmlFor="TOLL"
                   >
-                    TOLL
+                    TOLL (Per Container)
                   </label>
                   <div className="relative flex">
                     <select

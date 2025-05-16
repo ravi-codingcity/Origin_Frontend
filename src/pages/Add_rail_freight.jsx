@@ -770,7 +770,7 @@ const Add_rail_freight = () => {
                           className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight20ft0_10"
                         >
-                          20ft (0-10 Ton)
+                          20ft (0-10 Ton) /Container
                         </label>
                         <div className="relative flex">
                           <div className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 flex items-center justify-center">
@@ -793,7 +793,7 @@ const Add_rail_freight = () => {
                           className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight20ft10_20"
                         >
-                          20ft (10-20 Ton)
+                          20ft (10-20 Ton) /Container
                         </label>
                         <div className="relative flex">
                           <div className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 flex items-center justify-center">
@@ -816,7 +816,7 @@ const Add_rail_freight = () => {
                           className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight20ft20_26"
                         >
-                          20ft (20-26 Ton)
+                          20ft (20-26 Ton) /Container
                         </label>
                         <div className="relative flex">
                           <div className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 flex items-center justify-center">
@@ -839,7 +839,7 @@ const Add_rail_freight = () => {
                           className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight20ft26Plus"
                         >
-                          20ft (26+ Ton)
+                          20ft (26+ Ton) /Container
                         </label>
                         <div className="relative flex">
                           <div className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 flex items-center justify-center">
@@ -866,7 +866,7 @@ const Add_rail_freight = () => {
                           className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight40ft10_20"
                         >
-                          40ft (10-20 Ton)
+                          40ft (10-20 Ton) /Container
                         </label>
                         <div className="relative flex">
                           <div className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 flex items-center justify-center">
@@ -889,7 +889,7 @@ const Add_rail_freight = () => {
                           className="block text-black text-xs font-medium mb-1"
                           htmlFor="weight40ft20Plus"
                         >
-                          40ft (20+ Ton)
+                          40ft (20+ Ton) /Container
                         </label>
                         <div className="relative flex">
                           <div className="absolute left-0 top-0 w-9 h-full bg-gray-100 border-r-0 border-gray-300 rounded-l-md text-xs px-1 flex items-center justify-center">
