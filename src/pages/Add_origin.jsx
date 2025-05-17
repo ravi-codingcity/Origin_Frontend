@@ -77,6 +77,8 @@ const Add_origin = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  // Add state for shipping line filter
+  const [shippingLineFilter, setShippingLineFilter] = useState("");
 
   // Handle input changes
   const handleChange = (e) => {
@@ -451,23 +453,30 @@ const Add_origin = () => {
     }
   }, []);
 
-  // Sort and paginate data
-  const sortedData = [...shipmentData].sort((a, b) => {
-    // Sort by createdAt date in descending order (newest first)
-    return (
-      new Date(b.createdAt || b.updatedAt || 0) -
-      new Date(a.createdAt || a.updatedAt || 0)
-    );
-  });
+  // Extract unique shipping lines for filter dropdown
+  const uniqueShippingLines = React.useMemo(() => {
+    const shippingLines = shipmentData
+      .map((item) => item.shipping_lines)
+      .filter(Boolean); // Filter out null/undefined values
+    return ["", ...new Set(shippingLines)].sort(); // Add empty option and sort alphabetically
+  }, [shipmentData]);
 
-  // Get current entries for pagination
+  // Apply shipping line filter to the data
+  const filteredData = shippingLineFilter
+    ? shipmentData.filter((item) => item.shipping_lines === shippingLineFilter)
+    : shipmentData;
+
+  // Get current entries for pagination - update to use filtered data instead of sortedData
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentEntries = sortedData.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(sortedData.length / entriesPerPage);
+  const currentEntries = filteredData.slice(indexOfFirstEntry, indexOfLastEntry);
+  const totalPages = Math.ceil(filteredData.length / entriesPerPage);
 
-  // Function to change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // Handle shipping line filter changes
+  const handleShippingLineFilterChange = (e) => {
+    setShippingLineFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -956,9 +965,54 @@ const Add_origin = () => {
               </span>
               <span className="text-gray-500 text-xs">
                 Showing {currentEntries.length > 0 ? indexOfFirstEntry + 1 : 0}{" "}
-                to {Math.min(indexOfLastEntry, shipmentData.length)} of{" "}
-                {shipmentData.length}
+                to {Math.min(indexOfLastEntry, filteredData.length)} of{" "}
+                {filteredData.length}
+                {shippingLineFilter && <span> (filtered from {shipmentData.length})</span>}
               </span>
+            </div>
+          </div>
+
+          {/* Add shipping line filter */}
+          <div className="p-3 border-b border-gray-200 bg-gray-50">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center space-x-2">
+                <label
+                  htmlFor="shipping-line-filter"
+                  className="text-sm font-medium text-gray-700 whitespace-nowrap"
+                >
+                  Filter by Shipping Line:
+                </label>
+                <select
+                  id="shipping-line-filter"
+                  className="shadow-sm border border-gray-300 rounded-md py-1.5 px-2 text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                  value={shippingLineFilter}
+                  onChange={handleShippingLineFilterChange}
+                >
+                  <option value="">All Lines</option>
+                  {uniqueShippingLines
+                    .filter((line) => line !== "")
+                    .map((line) => (
+                      <option key={line} value={line}>
+                        {line}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              
+              {shippingLineFilter && (
+                <button
+                  onClick={() => {
+                    setShippingLineFilter("");
+                    setCurrentPage(1);
+                  }}
+                  className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <svg className="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Clear Filter
+                </button>
+              )}
             </div>
           </div>
 
@@ -1111,7 +1165,7 @@ const Add_origin = () => {
           </div>
 
           {/* Add pagination controls */}
-          {shipmentData.length > entriesPerPage && (
+          {filteredData.length > entriesPerPage && (
             <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
               <div className="flex-1 flex justify-between sm:hidden">
                 <button
@@ -1144,11 +1198,12 @@ const Add_origin = () => {
                     <span className="font-medium">{indexOfFirstEntry + 1}</span>{" "}
                     to{" "}
                     <span className="font-medium">
-                      {Math.min(indexOfLastEntry, shipmentData.length)}
+                      {Math.min(indexOfLastEntry, filteredData.length)}
                     </span>{" "}
                     of{" "}
-                    <span className="font-medium">{shipmentData.length}</span>{" "}
+                    <span className="font-medium">{filteredData.length}</span>{" "}
                     results
+                    {shippingLineFilter && <span> (filtered from {shipmentData.length})</span>}
                   </p>
                 </div>
                 <div>

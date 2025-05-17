@@ -73,6 +73,50 @@ const Add_rail_freight = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false); // Add refreshing state
+  // Add state for shipping line filter
+  const [shippingLineFilter, setShippingLineFilter] = useState("");
+
+  // Function to extract username from data - add this function
+  const getUserName = (item) => {
+    // Try multiple possible locations for the username in API response
+    if (item.name) return item.name;
+    if (item.userName) return item.userName;
+    if (item.createdBy) {
+      // Check if createdBy is an object or string
+      if (typeof item.createdBy === "object" && item.createdBy !== null) {
+        return (
+          item.createdBy.name ||
+          item.createdBy.username ||
+          item.createdBy.email ||
+          "User"
+        );
+      }
+      return item.createdBy;
+    }
+
+    // Check if name is in user object
+    if (item.user) {
+      if (typeof item.user === "object") {
+        if (item.user.name) return item.user.name;
+        if (item.user.username) return item.user.username;
+        if (item.user.email) return item.user.email;
+        return "User";
+      }
+      return item.user;
+    }
+
+    // If all else fails, try to get name from localStorage
+    try {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
+      const username =
+        userInfo.name ||
+        userInfo.username ||
+        localStorage.getItem("username");
+      return username || "Unknown User";
+    } catch (e) {
+      return "Unknown";
+    }
+  };
 
   // Determine which weight fields to show based on container type
   const showWeightFields = () => {
@@ -406,25 +450,15 @@ const Add_rail_freight = () => {
     }
   }, []);
 
-  const getUserName = (item) => {
-    if (item.name) return item.name;
-    if (item.userName) return item.userName;
-    if (item.createdBy) return item.createdBy;
+  // Extract unique shipping lines for filter dropdown
+  const uniqueShippingLines = React.useMemo(() => {
+    const shippingLines = railFreightData
+      .map((item) => item.shipping_lines)
+      .filter(Boolean); // Filter out null/undefined values
+    return ["", ...new Set(shippingLines)].sort(); // Add empty option and sort alphabetically
+  }, [railFreightData]);
 
-    if (item.user) {
-      if (typeof item.user === "object") {
-        if (item.user.name) return item.user.name;
-        if (item.user.username) return item.user.username;
-        if (item.user.email) return item.user.email;
-        return "User";
-      }
-      return item.user;
-    }
-
-    return "Unknown";
-  };
-
-  // Sort and paginate data
+  // Sort data
   const sortedData = [...railFreightData].sort((a, b) => {
     // Sort by createdAt date in descending order (newest first)
     return (
@@ -433,11 +467,22 @@ const Add_rail_freight = () => {
     );
   });
 
+  // Apply shipping line filter to the data
+  const filteredData = shippingLineFilter
+    ? sortedData.filter(item => item.shipping_lines === shippingLineFilter)
+    : sortedData;
+
   // Get current entries for pagination
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentEntries = sortedData.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(sortedData.length / entriesPerPage);
+  const currentEntries = filteredData.slice(indexOfFirstEntry, indexOfLastEntry);
+  const totalPages = Math.ceil(filteredData.length / entriesPerPage);
+
+  // Handle shipping line filter changes
+  const handleShippingLineFilterChange = (e) => {
+    setShippingLineFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
 
   // Function to change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -979,9 +1024,70 @@ const Add_rail_freight = () => {
               </span>
               <span className="text-gray-500 text-xs">
                 Showing {currentEntries.length > 0 ? indexOfFirstEntry + 1 : 0}{" "}
-                to {Math.min(indexOfLastEntry, railFreightData.length)} of{" "}
-                {railFreightData.length}
+                to {Math.min(indexOfLastEntry, filteredData.length)} of{" "}
+                {filteredData.length}
+                {shippingLineFilter && (
+                  <span>
+                    {" "}
+                    (filtered from {railFreightData.length})
+                  </span>
+                )}
               </span>
+            </div>
+          </div>
+
+          {/* Add shipping line filter */}
+          <div className="p-3 border-b border-gray-200 bg-gray-50">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center space-x-2">
+                <label
+                  htmlFor="shipping-line-filter"
+                  className="text-sm font-medium text-gray-700 whitespace-nowrap"
+                >
+                  Filter by Shipping Line:
+                </label>
+                <select
+                  id="shipping-line-filter"
+                  className="shadow-sm border border-gray-300 rounded-md py-1.5 px-2 text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                  value={shippingLineFilter}
+                  onChange={handleShippingLineFilterChange}
+                >
+                  <option value="">All Lines</option>
+                  {uniqueShippingLines
+                    .filter((line) => line !== "")
+                    .map((line) => (
+                      <option key={line} value={line}>
+                        {line}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {shippingLineFilter && (
+                <button
+                  onClick={() => {
+                    setShippingLineFilter("");
+                    setCurrentPage(1);
+                  }}
+                  className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <svg
+                    className="h-3 w-3 mr-1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                  Clear Filter
+                </button>
+              )}
             </div>
           </div>
 
@@ -989,17 +1095,39 @@ const Add_rail_freight = () => {
             <table className="min-w-full bg-white border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <th className="py-3 px-4 text-left border-r border-gray-200">User</th>
-                  <th className="py-3 px-4 text-left border-r border-gray-200">POR</th>
-                  <th className="py-3 px-4 text-left border-r border-gray-200">POL</th>
-                  <th className="py-3 px-4 text-left border-r border-gray-200">Container Type</th>
-                  <th className="py-3 px-4 text-left border-r border-gray-200">Shipping Line</th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">20ft (0-10 Ton)</th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">20ft (10-20 Ton)</th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">20ft (20-26 Ton)</th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">20ft (26+ Ton)</th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">40ft (10-20 Ton)</th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">40ft (20+ Ton)</th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                    User
+                  </th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                    POR
+                  </th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                    POL
+                  </th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                    Container Type
+                  </th>
+                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                    Shipping Line
+                  </th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                    20ft (0-10 Ton)
+                  </th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                    20ft (10-20 Ton)
+                  </th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                    20ft (20-26 Ton)
+                  </th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                    20ft (26+ Ton)
+                  </th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                    40ft (10-20 Ton)
+                  </th>
+                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                    40ft (20+ Ton)
+                  </th>
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -1110,8 +1238,8 @@ const Add_rail_freight = () => {
             </table>
           </div>
 
-          {/* Add pagination controls */}
-          {railFreightData.length > entriesPerPage && (
+          {/* Update pagination controls to use filteredData.length */}
+          {filteredData.length > entriesPerPage && (
             <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
               <div className="flex-1 flex justify-between sm:hidden">
                 <button
@@ -1144,13 +1272,17 @@ const Add_rail_freight = () => {
                     <span className="font-medium">{indexOfFirstEntry + 1}</span>{" "}
                     to{" "}
                     <span className="font-medium">
-                      {Math.min(indexOfLastEntry, railFreightData.length)}
+                      {Math.min(indexOfLastEntry, filteredData.length)}
                     </span>{" "}
                     of{" "}
-                    <span className="font-medium">
-                      {railFreightData.length}
-                    </span>{" "}
+                    <span className="font-medium">{filteredData.length}</span>{" "}
                     results
+                    {shippingLineFilter && (
+                      <span>
+                        {" "}
+                        (filtered from {railFreightData.length})
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div>

@@ -15,6 +15,8 @@ function View_rail_freight() {
   const [usernameFilter, setUsernameFilter] = useState("");
   // Add state for refresh loading
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // Add state for shipping line filter
+  const [shippingLineFilter, setShippingLineFilter] = useState("");
 
   // Format currency values for display
   const formatCurrency = (value, currency = "₹") => {
@@ -104,14 +106,24 @@ function View_rail_freight() {
     const usernames = railFreightData.map((item) => getUserName(item));
     return ["", ...new Set(usernames)].sort(); // Add empty option and sort alphabetically
   }, [railFreightData]);
+  
+  // Extract unique shipping lines for dropdown
+  const uniqueShippingLines = React.useMemo(() => {
+    const shippingLines = railFreightData
+      .map((item) => item.shipping_lines)
+      .filter(Boolean); // Filter out null/undefined values
+    return ["", ...new Set(shippingLines)].sort(); // Add empty option and sort alphabetically
+  }, [railFreightData]);
 
   // Apply filters to data before pagination
-  const filteredData = usernameFilter
-    ? sortedData.filter((item) => {
-        const username = getUserName(item);
-        return username === usernameFilter; // Exact match for dropdown selection
-      })
-    : sortedData;
+  const filteredData = sortedData.filter((item) => {
+    // Apply username filter if set
+    const usernameMatch = usernameFilter ? getUserName(item) === usernameFilter : true;
+    // Apply shipping line filter if set
+    const shippingLineMatch = shippingLineFilter ? item.shipping_lines === shippingLineFilter : true;
+    // Item must match both filters when they are applied
+    return usernameMatch && shippingLineMatch;
+  });
 
   // Get current entries for pagination
   const indexOfLastEntry = currentPage * entriesPerPage;
@@ -128,6 +140,12 @@ function View_rail_freight() {
   // Handle filter changes
   const handleFilterChange = (e) => {
     setUsernameFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  // Handle shipping line filter changes
+  const handleShippingLineChange = (e) => {
+    setShippingLineFilter(e.target.value);
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
@@ -199,55 +217,87 @@ function View_rail_freight() {
           <div>
             {/* Filter controls with refresh button */}
             <div className="mb-3 bg-white p-3 rounded-md shadow-sm">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2 w-2/3">
-                  <label
-                    htmlFor="username-filter"
-                    className="text-sm font-medium text-gray-700 whitespace-nowrap"
-                  >
-                    Filter by:
-                  </label>
-                  <select
-                    id="username-filter"
-                    className="block w-full py-1.5 px-2 border border-gray-300 rounded-md text-sm bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    value={usernameFilter}
-                    onChange={handleFilterChange}
-                  >
-                    <option value="">All Users</option>
-                    {uniqueUsernames
-                      .filter((name) => name !== "")
-                      .map((username) => (
-                        <option key={username} value={username}>
-                          {username}
-                        </option>
-                      ))}
-                  </select>
-
-                  {usernameFilter && (
-                    <button
-                      onClick={() => {
-                        setUsernameFilter("");
-                        setCurrentPage(1);
-                      }}
-                      className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                  {/* User filter */}
+                  <div className="flex items-center space-x-2 w-full sm:w-auto">
+                    <label
+                      htmlFor="username-filter"
+                      className="text-sm font-medium text-gray-700 whitespace-nowrap"
                     >
-                      <svg
-                        className="h-3 w-3 mr-1"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                      User:
+                    </label>
+                    <select
+                      id="username-filter"
+                      className="block w-full py-1.5 px-2 border border-gray-300 rounded-md text-sm bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      value={usernameFilter}
+                      onChange={handleFilterChange}
+                    >
+                      <option value="">All Users</option>
+                      {uniqueUsernames
+                        .filter((name) => name !== "")
+                        .map((username) => (
+                          <option key={username} value={username}>
+                            {username}
+                          </option>
+                        ))}
+                    </select>
+                    
+                    {usernameFilter && (
+                      <button
+                        onClick={() => {
+                          setUsernameFilter("");
+                          setCurrentPage(1);
+                        }}
+                        className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                      Clear
-                    </button>
-                  )}
+                        <svg className="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Shipping line filter - new addition */}
+                  <div className="flex items-center space-x-2 w-full sm:w-auto">
+                    <label
+                      htmlFor="shipping-line-filter"
+                      className="text-sm font-medium text-gray-700 whitespace-nowrap"
+                    >
+                      Shipping Line:
+                    </label>
+                    <select
+                      id="shipping-line-filter"
+                      className="block w-full py-1.5 px-2 border border-gray-300 rounded-md text-sm bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      value={shippingLineFilter}
+                      onChange={handleShippingLineChange}
+                    >
+                      <option value="">All Lines</option>
+                      {uniqueShippingLines
+                        .filter((line) => line !== "")
+                        .map((line) => (
+                          <option key={line} value={line}>
+                            {line}
+                          </option>
+                        ))}
+                    </select>
+                    
+                    {shippingLineFilter && (
+                      <button
+                        onClick={() => {
+                          setShippingLineFilter("");
+                          setCurrentPage(1);
+                        }}
+                        className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      >
+                        <svg className="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <button
@@ -276,10 +326,14 @@ function View_rail_freight() {
                   {isRefreshing ? "Refreshing..." : "Refresh"}
                 </button>
               </div>
-
-              {usernameFilter && (
-                <div className="mt-1 text-xs text-gray-600">
-                  Showing {filteredData.length} results for "{usernameFilter}"
+              
+              {/* Updated filter results message */}
+              {(usernameFilter || shippingLineFilter) && (
+                <div className="mt-2 text-xs text-gray-600">
+                  Showing {filteredData.length} results
+                  {usernameFilter && <span> for user "{usernameFilter}"</span>}
+                  {shippingLineFilter && <span> with shipping line "{shippingLineFilter}"</span>}
+                  {(usernameFilter || shippingLineFilter) && <span> (filtered from {sortedData.length})</span>}
                 </div>
               )}
             </div>
