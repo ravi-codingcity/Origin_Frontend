@@ -25,7 +25,7 @@ export const getPOROptions = () => {
       "Loni ICD (LON)",
       "Jodhpur ICD (RJ)",
       "Khodiyar ICD (KHODIYAR)",
-      "Bangalore ICD Whitefield (WFD)",
+      "Bangalore ICD (WFD)",
       "Durgapur ICD (DGP)",
       "Hyderabad ICD (HYD)",
       "Ankleshwar ICD (AKV)",
