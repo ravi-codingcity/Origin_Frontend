@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import { authFetch, handleAuthError, checkAuthentication } from "../utils/authHandler";
 
 function View_rail_freight() {
   // State for storing fetched data
@@ -63,10 +64,17 @@ function View_rail_freight() {
     return "Unknown";
   };
 
-  // Fetch all rail freight data
+  // Fetch all rail freight data with auth error handling
   useEffect(() => {
     setIsLoading(true);
-    fetch("https://origin-backend-3v3f.onrender.com/api/railfreight/forms/all")
+    
+    // Check authentication first
+    if (!checkAuthentication()) {
+      return; // Stop if not authenticated (redirect handled by checkAuthentication)
+    }
+    
+    // Use the authFetch utility
+    authFetch("https://origin-backend-3v3f.onrender.com/api/railfreight/forms/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(
@@ -76,18 +84,18 @@ function View_rail_freight() {
         return response.json();
       })
       .then((data) => {
-        console.log("Fetched rail freight data:", data);
-        // Debug log to check currencies
-        console.log(
-          "Currencies from server:",
-          data.map((item) => item.currency)
-        );
+        console.log("API Response Data:", data);
         setRailFreightData(data);
         setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching rail freight data:", error);
-        setError(error.message);
+        
+        // Check if it's an auth error
+        if (!handleAuthError(error)) {
+          // Only set error message if it's not an auth error
+          setError(error.message);
+        }
         setIsLoading(false);
       });
   }, []);
@@ -149,30 +157,30 @@ function View_rail_freight() {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  // Add function to handle refresh with loading state
+  // Add function to handle refresh with auth error handling
   const handleRefresh = () => {
-    setIsRefreshing(true);
-    fetch("https://origin-backend-3v3f.onrender.com/api/railfreight/forms/all")
+    setIsLoading(true);
+    
+    authFetch("https://origin-backend-3v3f.onrender.com/api/railfreight/forms/all")
       .then((response) => {
         if (!response.ok) {
-          throw new Error(
-            `Network response was not ok (Status: ${response.status})`
-          );
+          throw new Error(`Network response was not ok (Status: ${response.status})`);
         }
         return response.json();
       })
       .then((data) => {
-        console.log("Refreshed rail freight data:", data);
         setRailFreightData(data);
         setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching rail freight data:", error);
-        setError(error.message);
+        
+        // Check if it's an auth error
+        if (!handleAuthError(error)) {
+          // Only set error message if it's not an auth error
+          setError(error.message);
+        }
         setIsLoading(false);
-      })
-      .finally(() => {
-        setIsRefreshing(false);
       });
   };
 
@@ -215,7 +223,7 @@ function View_rail_freight() {
           </div>
         ) : (
           <div>
-            {/* Filter controls with refresh button */}
+            {/* Redesigned filter controls with shipping line filter */}
             <div className="mb-3 bg-white p-3 rounded-md shadow-sm">
               <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
@@ -302,16 +310,11 @@ function View_rail_freight() {
 
                 <button
                   onClick={handleRefresh}
-                  disabled={isRefreshing}
-                  className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors ${
-                    isRefreshing ? "opacity-75 cursor-not-allowed" : ""
-                  }`}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`h-3.5 w-3.5 mr-1 ${
-                      isRefreshing ? "animate-spin" : ""
-                    }`}
+                    className="h-3.5 w-3.5 mr-1"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -323,7 +326,7 @@ function View_rail_freight() {
                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                     />
                   </svg>
-                  {isRefreshing ? "Refreshing..." : "Refresh"}
+                  Refresh
                 </button>
               </div>
               

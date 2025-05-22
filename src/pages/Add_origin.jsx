@@ -4,6 +4,7 @@ import { usePOROptions } from "../components/POR";
 import { usePOLOptions } from "../components/POL";
 import { useContainerTypeOptions } from "../components/Container_type";
 import { useShippingLinesOptions } from "../components/Shipping_lines";
+import { authFetch, handleAuthError, checkAuthentication } from "../utils/authHandler";
 
 const Add_origin = () => {
   // Get POR options using the custom hook
@@ -156,12 +157,9 @@ const Add_origin = () => {
       return;
     }
 
-    // Create a copy for API submission - format data to match API expectations
-    let formDataToSend;
-
     try {
       // First attempt: Try sending with the new structure (if backend supports it)
-      formDataToSend = {
+      const formDataToSend = {
         name: formData.name, // Include name in the submission
         por: formData.por,
         pol: formData.pol,
@@ -187,13 +185,13 @@ const Add_origin = () => {
 
       console.log("Submitting form data:", formDataToSend);
 
-      const response = await fetch(
+      // Use authFetch instead of regular fetch
+      const response = await authFetch(
         "https://origin-backend-3v3f.onrender.com/api/origin/forms/create",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + localStorage.getItem("token"),
           },
           body: JSON.stringify(formDataToSend),
         }
@@ -227,69 +225,72 @@ const Add_origin = () => {
       displaySuccessMessage("Entry saved successfully!");
     } catch (error) {
       console.error("Form submission error:", error);
+      
+      // Check if it's an auth error before trying alternative format
+      if (!handleAuthError(error)) {
+        // Try alternative format (backward compatibility) or show error message
+        try {
+          console.log("Trying alternative form format...");
 
-      // Try alternative format if the first attempt failed (backward compatibility)
-      try {
-        console.log("Trying alternative form format...");
+          formDataToSend = {
+            name: formData.name, // Include name in the alternative format too
+            por: formData.por,
+            pol: formData.pol,
+            container_type: formData.container_type,
+            shipping_lines: formData.shipping_lines,
+            // Simplified format with just numeric values
+            bl_fees: parseFloat(formData.bl_fees.value) || 0,
+            thc: parseFloat(formData.thc.value) || 0,
+            muc: parseFloat(formData.muc.value) || 0,
+            toll: parseFloat(formData.toll.value) || 0,
 
-        formDataToSend = {
-          name: formData.name, // Include name in the alternative format too
-          por: formData.por,
-          pol: formData.pol,
-          container_type: formData.container_type,
-          shipping_lines: formData.shipping_lines,
-          // Simplified format with just numeric values
-          bl_fees: parseFloat(formData.bl_fees.value) || 0,
-          thc: parseFloat(formData.thc.value) || 0,
-          muc: parseFloat(formData.muc.value) || 0,
-          toll: parseFloat(formData.toll.value) || 0,
+            // Add currency as a separate field for backward compatibility
+            currency: formData.bl_fees.currency || "$",
+          };
 
-          // Add currency as a separate field for backward compatibility
-          currency: formData.bl_fees.currency || "$",
-        };
+          console.log("Attempting with alternative format:", formDataToSend);
 
-        console.log("Attempting with alternative format:", formDataToSend);
-
-        const response = await fetch(
-          "https://origin-backend-3v3f.onrender.com/api/origin/forms/create",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + localStorage.getItem("token"),
-            },
-            body: JSON.stringify(formDataToSend),
-          }
-        );
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `Server error: ${response.status} - ${errorText || "Unknown error"}`
+          const response = await fetch(
+            "https://origin-backend-3v3f.onrender.com/api/origin/forms/create",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("token"),
+              },
+              body: JSON.stringify(formDataToSend),
+            }
           );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `Server error: ${response.status} - ${errorText || "Unknown error"}`
+            );
+          }
+
+          // Reset form after successful submission
+          setFormData({
+            name: formData.name, // Preserve the pre-filled name
+            por: "",
+            pol: "",
+            container_type: "",
+            shipping_lines: "",
+            bl_fees: { value: "", currency: "₹" },
+            thc: { value: "", currency: "₹" },
+            muc: { value: "", currency: "₹" },
+            toll: { value: "", currency: "₹" },
+          });
+
+          // Fetch updated data
+          fetchShipmentData();
+
+          // Show success message
+          displaySuccessMessage("Entry saved successfully!");
+        } catch (fallbackError) {
+          console.error("Both submission attempts failed:", fallbackError);
+          setErrorMessage(`Form submission failed: ${fallbackError.message}`);
         }
-
-        // Reset form after successful submission
-        setFormData({
-          name: formData.name, // Preserve the pre-filled name
-          por: "",
-          pol: "",
-          container_type: "",
-          shipping_lines: "",
-          bl_fees: { value: "", currency: "₹" },
-          thc: { value: "", currency: "₹" },
-          muc: { value: "", currency: "₹" },
-          toll: { value: "", currency: "₹" },
-        });
-
-        // Fetch updated data
-        fetchShipmentData();
-
-        // Show success message
-        displaySuccessMessage("Entry saved successfully!");
-      } catch (fallbackError) {
-        console.error("Both submission attempts failed:", fallbackError);
-        setErrorMessage(`Form submission failed: ${fallbackError.message}`);
       }
     } finally {
       setIsSubmitting(false); // End loading animation
@@ -400,17 +401,18 @@ const Add_origin = () => {
     }
   };
 
-  // Fetch shipment data with console.log to inspect response structure
+  // Check authentication on component mount
+  useEffect(() => {
+    checkAuthentication();
+  }, []);
+
+  // Fetch shipment data with auth error handling
   const fetchShipmentData = async () => {
     setIsRefreshing(true);
     try {
-      const response = await fetch(
-        "https://origin-backend-3v3f.onrender.com/api/origin/forms/user",
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
+      // Use authFetch instead of regular fetch
+      const response = await authFetch(
+        "https://origin-backend-3v3f.onrender.com/api/origin/forms/user"
       );
 
       if (!response.ok) {
@@ -418,13 +420,16 @@ const Add_origin = () => {
       }
 
       const data = await response.json();
-      console.log("API Response Data:", data); // Debug API response
       setShipmentData(data);
-      setCurrentPage(1); // Reset to first page when new data is loaded
+      setCurrentPage(1);
       displaySuccessMessage("Data refreshed successfully");
     } catch (error) {
       console.error("Error fetching data:", error);
-      setErrorMessage(`Failed to refresh data: ${error.message}`);
+      
+      // Check if it's an auth error before showing generic error message
+      if (!handleAuthError(error)) {
+        setErrorMessage(`Failed to refresh data: ${error.message}`);
+      }
     } finally {
       setIsRefreshing(false);
     }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import { authFetch, handleAuthError, checkAuthentication } from "../utils/authHandler";
 
 const View_origin = () => {
   // State for storing fetched data
@@ -38,10 +39,17 @@ const View_origin = () => {
     })}`;
   };
 
-  // Fetch all origin form data with debug logging
+  // Fetch all origin form data with auth error handling
   useEffect(() => {
     setIsLoading(true);
-    fetch("https://origin-backend-3v3f.onrender.com/api/origin/forms/all")
+    
+    // Check authentication first
+    if (!checkAuthentication()) {
+      return; // Stop if not authenticated (redirect handled by checkAuthentication)
+    }
+    
+    // Use the authFetch utility
+    authFetch("https://origin-backend-3v3f.onrender.com/api/origin/forms/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(
@@ -51,7 +59,7 @@ const View_origin = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("API Response Data:", data); // Debug API response
+        console.log("API Response Data:", data);
 
         // Debug log for dates to verify sorting
         console.log(
@@ -68,7 +76,12 @@ const View_origin = () => {
       })
       .catch((error) => {
         console.error("Error fetching origin data:", error);
-        setError(error.message);
+        
+        // Check if it's an auth error
+        if (!handleAuthError(error)) {
+          // Only set error message if it's not an auth error
+          setError(error.message);
+        }
         setIsLoading(false);
       });
   }, []);
@@ -174,10 +187,11 @@ const View_origin = () => {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  // Add function to handle refresh
+  // Add function to handle refresh with auth error handling
   const handleRefresh = () => {
     setIsLoading(true);
-    fetch("https://origin-backend-3v3f.onrender.com/api/origin/forms/all")
+    
+    authFetch("https://origin-backend-3v3f.onrender.com/api/origin/forms/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Network response was not ok (Status: ${response.status})`);
@@ -190,7 +204,12 @@ const View_origin = () => {
       })
       .catch((error) => {
         console.error("Error fetching origin data:", error);
-        setError(error.message);
+        
+        // Check if it's an auth error
+        if (!handleAuthError(error)) {
+          // Only set error message if it's not an auth error
+          setError(error.message);
+        }
         setIsLoading(false);
       });
   };

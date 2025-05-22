@@ -4,6 +4,7 @@ import { usePOROptions } from "../components/POR";
 import { usePOLOptions } from "../components/POL";
 import { useContainerTypeOptions } from "../components/Container_type";
 import { useShippingLinesOptions } from "../components/Shipping_lines";
+import { authFetch, handleAuthError, checkAuthentication } from "../utils/authHandler";
 
 const Add_rail_freight = () => {
   // Get options using custom hooks
@@ -191,6 +192,11 @@ const Add_rail_freight = () => {
     }, 3000);
   };
 
+  // Check authentication on component mount
+  useEffect(() => {
+    checkAuthentication();
+  }, []);
+
   // Handle form submission with loading state
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -236,35 +242,23 @@ const Add_rail_freight = () => {
 
       console.log("Submitting form data (backend compatible):", formDataToSend);
 
-      const response = await fetch(
+      // Use authFetch instead of regular fetch
+      const response = await authFetch(
         "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/create",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + localStorage.getItem("token"),
           },
           body: JSON.stringify(formDataToSend),
         }
       );
 
-      const responseText = await response.text();
-
       if (!response.ok) {
-        try {
-          const errorData = JSON.parse(responseText);
-          throw new Error(
-            `Server error: ${response.status} - ${
-              errorData.msg || JSON.stringify(errorData)
-            }`
-          );
-        } catch (parseError) {
-          throw new Error(
-            `Server error: ${response.status} - ${
-              responseText || "Unknown error"
-            }`
-          );
-        }
+        const responseText = await response.text();
+        throw new Error(
+          `Server error: ${response.status} - ${responseText || "Unknown error"}`
+        );
       }
 
       setFormData({
@@ -289,23 +283,23 @@ const Add_rail_freight = () => {
       displaySuccessMessage("Rail freight charge added successfully!");
     } catch (error) {
       console.error("Form submission error:", error);
-      setErrorMessage(`Form submission failed: ${error.message}`);
+      
+      // Check if it's an auth error before showing generic error message
+      if (!handleAuthError(error)) {
+        setErrorMessage(`Form submission failed: ${error.message}`);
+      }
     } finally {
       setIsSubmitting(false); // End loading animation
     }
   };
 
-  // Fetch rail freight data
+  // Fetch rail freight data with auth error handling
   const fetchRailFreightData = async () => {
     setIsRefreshing(true); // Start loading state
     try {
-      const response = await fetch(
-        "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/user",
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
+      // Use authFetch instead of regular fetch
+      const response = await authFetch(
+        "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/user"
       );
 
       if (!response.ok) {
@@ -319,7 +313,11 @@ const Add_rail_freight = () => {
       displaySuccessMessage("Data refreshed successfully"); // Add success message
     } catch (error) {
       console.error("Error fetching data:", error);
-      setErrorMessage(`Failed to fetch data: ${error.message}`);
+      
+      // Check if it's an auth error before showing generic error message
+      if (!handleAuthError(error)) {
+        setErrorMessage(`Failed to fetch data: ${error.message}`);
+      }
     } finally {
       setIsRefreshing(false); // End loading state
     }
@@ -361,13 +359,6 @@ const Add_rail_freight = () => {
       return;
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setErrorMessage("Authentication required. Please log in again.");
-      setIsUpdating(false);
-      return;
-    }
-
     try {
       const updatedRecord = {
         name: editingRecord.name,
@@ -397,13 +388,13 @@ const Add_rail_freight = () => {
 
       console.log("Sending updated record:", updatedRecord);
 
-      const response = await fetch(
+      // Use authFetch instead of regular fetch
+      const response = await authFetch(
         `https://origin-backend-3v3f.onrender.com/api/railfreight/forms/${recordId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
           },
           body: JSON.stringify(updatedRecord),
         }
@@ -424,7 +415,11 @@ const Add_rail_freight = () => {
       displaySuccessMessage("Rail freight charge updated successfully!");
     } catch (error) {
       console.error("Error updating record:", error);
-      setErrorMessage(`Failed to update record: ${error.message}`);
+      
+      // Check if it's an auth error before showing generic error message
+      if (!handleAuthError(error)) {
+        setErrorMessage(`Failed to update record: ${error.message}`);
+      }
     } finally {
       setIsUpdating(false); // End loading animation
     }
