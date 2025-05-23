@@ -192,8 +192,44 @@ const Add_rail_freight = () => {
     }, 3000);
   };
 
-  // Check authentication on component mount
+  // Add this helper function near the top of the component
+  const redirectToLogin = (reason) => {
+    console.log(`Redirecting to login: ${reason || 'Authentication required'}`);
+    
+    // Clear any auth tokens
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    sessionStorage.removeItem('userInfo');
+    
+    // Redirect to login page
+    window.location.href = '/';
+  };
+
+  // Update the useEffect for auth check
   useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      redirectToLogin('No authentication token found');
+      return;
+    }
+    
+    // Check if token is expired
+    try {
+      if (token.includes('.')) {
+        // This is likely a JWT token
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiry = payload.exp * 1000; // Convert to milliseconds
+        
+        if (Date.now() >= expiry) {
+          redirectToLogin('Authentication token expired');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not verify token expiration:', e);
+    }
+    
     checkAuthentication();
   }, []);
 
@@ -201,7 +237,7 @@ const Add_rail_freight = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
-    setIsSubmitting(true); // Start loading animation
+    setIsSubmitting(true);
 
     if (
       !formData.por ||
@@ -215,6 +251,12 @@ const Add_rail_freight = () => {
     }
 
     try {
+      // Check token before submission
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       const formDataToSend = {
         name: formData.name,
         por: formData.por,
@@ -284,12 +326,22 @@ const Add_rail_freight = () => {
     } catch (error) {
       console.error("Form submission error:", error);
       
-      // Check if it's an auth error before showing generic error message
-      if (!handleAuthError(error)) {
-        setErrorMessage(`Form submission failed: ${error.message}`);
+      // Check for auth errors and redirect explicitly
+      if (error.message.includes('token') || error.message.includes('auth') || 
+          error.message.includes('unauthorized') || error.message.includes('forbidden')) {
+        redirectToLogin(`Authentication error during form submission: ${error.message}`);
+        return;
       }
+      
+      // Check if it's an auth error before showing generic error
+      if (handleAuthError(error)) {
+        // handleAuthError should handle redirection
+        return;
+      }
+      
+      setErrorMessage(`Form submission failed: ${error.message}`);
     } finally {
-      setIsSubmitting(false); // End loading animation
+      setIsSubmitting(false);
     }
   };
 
@@ -297,6 +349,13 @@ const Add_rail_freight = () => {
   const fetchRailFreightData = async () => {
     setIsRefreshing(true); // Start loading state
     try {
+      // Check token before fetching
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (!token) {
+        redirectToLogin('No authentication token found for data refresh');
+        return;
+      }
+      
       // Use authFetch instead of regular fetch
       const response = await authFetch(
         "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/user"
@@ -314,10 +373,19 @@ const Add_rail_freight = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
       
-      // Check if it's an auth error before showing generic error message
-      if (!handleAuthError(error)) {
-        setErrorMessage(`Failed to fetch data: ${error.message}`);
+      // Check for explicit auth errors
+      if (error.message.includes('token') || error.message.includes('auth') || 
+          error.message.includes('unauthorized') || error.message.includes('forbidden')) {
+        redirectToLogin(`Authentication error during data refresh: ${error.message}`);
+        return;
       }
+      
+      // Let handleAuthError try to handle it
+      if (handleAuthError(error)) {
+        return; // handleAuthError should handle redirection
+      }
+      
+      setErrorMessage(`Failed to fetch data: ${error.message}`);
     } finally {
       setIsRefreshing(false); // End loading state
     }
@@ -415,6 +483,13 @@ const Add_rail_freight = () => {
       displaySuccessMessage("Rail freight charge updated successfully!");
     } catch (error) {
       console.error("Error updating record:", error);
+      
+      // Check for auth errors and redirect explicitly
+      if (error.message.includes('token') || error.message.includes('auth') || 
+          error.message.includes('unauthorized') || error.message.includes('forbidden')) {
+        redirectToLogin(`Authentication error during record update: ${error.message}`);
+        return;
+      }
       
       // Check if it's an auth error before showing generic error message
       if (!handleAuthError(error)) {

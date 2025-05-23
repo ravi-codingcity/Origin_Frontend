@@ -33,7 +33,10 @@ export const handleAuthError = (errorOrResponse, options = {}) => {
         errorMessage.includes('token expired') ||
         errorMessage.includes('token invalid') ||
         errorMessage.includes('not logged in') ||
-        errorMessage.includes('jwt')
+        errorMessage.includes('jwt') ||
+        errorMessage.includes('auth') ||
+        errorMessage.includes('permission') ||
+        errorMessage.includes('login required')
       ) {
         console.error(`Authentication error: ${errorOrResponse.message}`);
         isAuthError = true;
@@ -66,9 +69,10 @@ export const handleAuthError = (errorOrResponse, options = {}) => {
       }
 
       if (shouldRedirect) {
-        // Prevent infinite redirects
-        if (!window.location.pathname.includes('/')) {
+        // Prevent infinite redirects and ensure we go to login
+        if (!window.location.pathname.includes('/login')) {
           console.log('Redirecting to login page due to authentication error');
+          // Force reload to clear any React state
           window.location.href = '/';
         }
       }
@@ -77,6 +81,12 @@ export const handleAuthError = (errorOrResponse, options = {}) => {
     return isAuthError;
   } catch (e) {
     console.error('Error in auth error handler:', e);
+    
+    // On critical error in the handler itself, attempt to redirect anyway
+    if (shouldRedirect) {
+      window.location.href = '/';
+    }
+    
     return false;
   }
 };

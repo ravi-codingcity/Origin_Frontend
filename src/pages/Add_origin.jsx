@@ -139,6 +139,20 @@ const Add_origin = () => {
     }, 3000);
   };
 
+  // Add this helper function near the top of the component
+  const redirectToLogin = (reason) => {
+    console.log(`Redirecting to login: ${reason || 'Authentication required'}`);
+    
+    // Clear any auth tokens
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    sessionStorage.removeItem('userInfo');
+    
+    // Redirect to login page
+    window.location.href = '/';
+  };
+
   // Handle form submission with loading state
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -158,9 +172,9 @@ const Add_origin = () => {
     }
 
     try {
-      // First attempt: Try sending with the new structure (if backend supports it)
-      const formDataToSend = {
-        name: formData.name, // Include name in the submission
+      // Define formDataToSend with proper scope
+      let formDataToSend = {
+        name: formData.name,
         por: formData.por,
         pol: formData.pol,
         container_type: formData.container_type,
@@ -184,6 +198,12 @@ const Add_origin = () => {
       };
 
       console.log("Submitting form data:", formDataToSend);
+
+      // Check token before making the request
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
 
       // Use authFetch instead of regular fetch
       const response = await authFetch(
@@ -226,71 +246,81 @@ const Add_origin = () => {
     } catch (error) {
       console.error("Form submission error:", error);
       
-      // Check if it's an auth error before trying alternative format
-      if (!handleAuthError(error)) {
-        // Try alternative format (backward compatibility) or show error message
-        try {
-          console.log("Trying alternative form format...");
+      // Check if it's an auth error and redirect if needed
+      if (handleAuthError(error) || error.message.includes('token') || error.message.includes('auth')) {
+        redirectToLogin(`Authentication error during form submission: ${error.message}`);
+        return;
+      }
+      
+      // Try alternative format (backward compatibility) with explicit error handling
+      try {
+        console.log("Trying alternative form format...");
 
-          formDataToSend = {
-            name: formData.name, // Include name in the alternative format too
-            por: formData.por,
-            pol: formData.pol,
-            container_type: formData.container_type,
-            shipping_lines: formData.shipping_lines,
-            // Simplified format with just numeric values
-            bl_fees: parseFloat(formData.bl_fees.value) || 0,
-            thc: parseFloat(formData.thc.value) || 0,
-            muc: parseFloat(formData.muc.value) || 0,
-            toll: parseFloat(formData.toll.value) || 0,
+        // Properly define formDataToSend in this scope
+        let formDataToSend = {
+          name: formData.name,
+          por: formData.por,
+          pol: formData.pol,
+          container_type: formData.container_type,
+          shipping_lines: formData.shipping_lines,
+          // Simplified format with just numeric values
+          bl_fees: parseFloat(formData.bl_fees.value) || 0,
+          thc: parseFloat(formData.thc.value) || 0,
+          muc: parseFloat(formData.muc.value) || 0,
+          toll: parseFloat(formData.toll.value) || 0,
+          // Add currency as a separate field for backward compatibility
+          currency: formData.bl_fees.currency || "$",
+        };
 
-            // Add currency as a separate field for backward compatibility
-            currency: formData.bl_fees.currency || "$",
-          };
+        console.log("Attempting with alternative format:", formDataToSend);
 
-          console.log("Attempting with alternative format:", formDataToSend);
-
-          const response = await fetch(
-            "https://origin-backend-3v3f.onrender.com/api/origin/forms/create",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + localStorage.getItem("token"),
-              },
-              body: JSON.stringify(formDataToSend),
-            }
-          );
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-              `Server error: ${response.status} - ${errorText || "Unknown error"}`
-            );
+        const response = await fetch(
+          "https://origin-backend-3v3f.onrender.com/api/origin/forms/create",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+            body: JSON.stringify(formDataToSend),
           }
+        );
 
-          // Reset form after successful submission
-          setFormData({
-            name: formData.name, // Preserve the pre-filled name
-            por: "",
-            pol: "",
-            container_type: "",
-            shipping_lines: "",
-            bl_fees: { value: "", currency: "₹" },
-            thc: { value: "", currency: "₹" },
-            muc: { value: "", currency: "₹" },
-            toll: { value: "", currency: "₹" },
-          });
-
-          // Fetch updated data
-          fetchShipmentData();
-
-          // Show success message
-          displaySuccessMessage("Entry saved successfully!");
-        } catch (fallbackError) {
-          console.error("Both submission attempts failed:", fallbackError);
-          setErrorMessage(`Form submission failed: ${fallbackError.message}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `Server error: ${response.status} - ${errorText || "Unknown error"}`
+          );
         }
+
+        // Reset form after successful submission
+        setFormData({
+          name: formData.name, // Preserve the pre-filled name
+          por: "",
+          pol: "",
+          container_type: "",
+          shipping_lines: "",
+          bl_fees: { value: "", currency: "₹" },
+          thc: { value: "", currency: "₹" },
+          muc: { value: "", currency: "₹" },
+          toll: { value: "", currency: "₹" },
+        });
+
+        // Fetch updated data
+        fetchShipmentData();
+
+        // Show success message
+        displaySuccessMessage("Entry saved successfully!");
+      } catch (fallbackError) {
+        console.error("Both submission attempts failed:", fallbackError);
+        
+        // Check if fallback error is auth-related
+        if (fallbackError.message.includes('token') || fallbackError.message.includes('auth')) {
+          redirectToLogin(`Authentication error during fallback submission: ${fallbackError.message}`);
+          return;
+        }
+        
+        setErrorMessage(`Form submission failed: ${fallbackError.message}`);
       }
     } finally {
       setIsSubmitting(false); // End loading animation
@@ -403,6 +433,28 @@ const Add_origin = () => {
 
   // Check authentication on component mount
   useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      redirectToLogin('No authentication token found');
+      return;
+    }
+    
+    // Check if token is expired
+    try {
+      if (token.includes('.')) {
+        // This is likely a JWT token
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiry = payload.exp * 1000; // Convert to milliseconds
+        
+        if (Date.now() >= expiry) {
+          redirectToLogin('Authentication token expired');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not verify token expiration:', e);
+    }
+    
     checkAuthentication();
   }, []);
 
@@ -410,6 +462,12 @@ const Add_origin = () => {
   const fetchShipmentData = async () => {
     setIsRefreshing(true);
     try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (!token) {
+        redirectToLogin('No authentication token found for data refresh');
+        return;
+      }
+      
       // Use authFetch instead of regular fetch
       const response = await authFetch(
         "https://origin-backend-3v3f.onrender.com/api/origin/forms/user"
@@ -426,7 +484,13 @@ const Add_origin = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
       
-      // Check if it's an auth error before showing generic error message
+      if (error.message.includes('token') || error.message.includes('auth') || 
+          error.message.includes('unauthorized') || error.message.includes('forbidden')) {
+        redirectToLogin(`Authentication error during data refresh: ${error.message}`);
+        return;
+      }
+      
+      // Only set error message if it's not an auth error
       if (!handleAuthError(error)) {
         setErrorMessage(`Failed to refresh data: ${error.message}`);
       }

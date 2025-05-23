@@ -19,6 +19,20 @@ function View_rail_freight() {
   // Add state for shipping line filter
   const [shippingLineFilter, setShippingLineFilter] = useState("");
 
+  // Add redirectToLogin helper function for consistent redirect handling
+  const redirectToLogin = (reason) => {
+    console.log(`Redirecting to login: ${reason || 'Authentication required'}`);
+    
+    // Clear all auth tokens
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    sessionStorage.removeItem('userInfo');
+    
+    // Redirect to login page
+    window.location.href = '/';
+  };
+
   // Format currency values for display
   const formatCurrency = (value, currency = "₹") => {
     if (value === undefined || value === null) return "-";
@@ -64,13 +78,40 @@ function View_rail_freight() {
     return "Unknown";
   };
 
-  // Fetch all rail freight data with auth error handling
+  // Add enhanced authentication check at component mount
+  useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      redirectToLogin('No authentication token found');
+      return;
+    }
+    
+    // Check if token is expired (if JWT)
+    try {
+      if (token.includes('.')) {
+        // This is likely a JWT token
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiry = payload.exp * 1000; // Convert to milliseconds
+        
+        if (Date.now() >= expiry) {
+          redirectToLogin('Authentication token expired');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not verify token expiration:', e);
+    }
+  }, []);
+
+  // Fetch all rail freight data with enhanced auth error handling
   useEffect(() => {
     setIsLoading(true);
     
-    // Check authentication first
-    if (!checkAuthentication()) {
-      return; // Stop if not authenticated (redirect handled by checkAuthentication)
+    // Check token before making the request
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      redirectToLogin('No authentication token found for data fetch');
+      return;
     }
     
     // Use the authFetch utility
@@ -91,7 +132,14 @@ function View_rail_freight() {
       .catch((error) => {
         console.error("Error fetching rail freight data:", error);
         
-        // Check if it's an auth error
+        // Check for specific auth-related errors
+        if (error.message.includes('token') || error.message.includes('auth') || 
+            error.message.includes('unauthorized') || error.message.includes('forbidden')) {
+          redirectToLogin(`Authentication error during data fetch: ${error.message}`);
+          return;
+        }
+        
+        // Use the auth handler as fallback
         if (!handleAuthError(error)) {
           // Only set error message if it's not an auth error
           setError(error.message);
@@ -157,9 +205,16 @@ function View_rail_freight() {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  // Add function to handle refresh with auth error handling
+  // Add function to handle refresh with enhanced auth error handling
   const handleRefresh = () => {
     setIsLoading(true);
+    
+    // Check token before refreshing
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      redirectToLogin('No authentication token found for data refresh');
+      return;
+    }
     
     authFetch("https://origin-backend-3v3f.onrender.com/api/railfreight/forms/all")
       .then((response) => {
@@ -175,7 +230,14 @@ function View_rail_freight() {
       .catch((error) => {
         console.error("Error fetching rail freight data:", error);
         
-        // Check if it's an auth error
+        // Check for specific auth-related errors
+        if (error.message.includes('token') || error.message.includes('auth') || 
+            error.message.includes('unauthorized') || error.message.includes('forbidden')) {
+          redirectToLogin(`Authentication error during refresh: ${error.message}`);
+          return;
+        }
+        
+        // Use the auth handler as fallback
         if (!handleAuthError(error)) {
           // Only set error message if it's not an auth error
           setError(error.message);
