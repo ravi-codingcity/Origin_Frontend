@@ -90,9 +90,9 @@ export const checkAuthentication = () => {
   
   if (!token) {
     // Prevent infinite redirects
-    if (!window.location.pathname.includes('/login')) {
+    if (!window.location.pathname.includes('/')) {
       console.log('No auth token found, redirecting to login page');
-      window.location.href = '/login';
+      window.location.href = '/';
     }
     return false;
   }
@@ -109,8 +109,8 @@ export const checkAuthentication = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
         
-        if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
+        if (!window.location.pathname.includes('/')) {
+          window.location.href = '/';
         }
         return false;
       }
