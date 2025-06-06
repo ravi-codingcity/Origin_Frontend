@@ -93,7 +93,7 @@ const Login = () => {
         <FaShippingFast className="text-7xl text-red-700" />
       </div>
 
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-xl border-2 border-red-200">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-xl border-2 border-blue-200">
         <div className="text-center">
           <img src={logo} alt="OmTrans Logo" className="h-20 mx-auto mb-3" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -171,7 +171,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-lg transition-all duration-150 disabled:opacity-70"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg transition-all duration-150 disabled:opacity-70"
             >
               {isLoading ? (
                 <span className="flex items-center">
