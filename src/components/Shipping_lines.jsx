@@ -19,6 +19,7 @@ export const getShippingLinesOptions = () => {
     "IRISL",
     "KMTC",
     "Maersk",
+    "Maxicon Shipping Agencies",
     "MSC",
     "NAVIS",
     "ONE",
