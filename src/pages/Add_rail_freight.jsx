@@ -342,11 +342,10 @@ const Add_rail_freight = () => {
       setErrorMessage(`Form submission failed: ${error.message}`);
     } finally {
       setIsSubmitting(false);
-    }
-  };
+    }  };
 
   // Fetch rail freight data with auth error handling
-  const fetchRailFreightData = async () => {
+  const fetchRailFreightData = async (clearForm = false) => {
     setIsRefreshing(true); // Start loading state
     try {
       // Check token before fetching
@@ -369,7 +368,35 @@ const Add_rail_freight = () => {
       console.log("Fetched rail freight data:", data);
       setRailFreightData(data);
       setCurrentPage(1); // Reset to first page when new data is fetched
-      displaySuccessMessage("Data refreshed successfully"); // Add success message
+      
+      // Clear form fields if requested (when refresh button is clicked)
+      if (clearForm) {
+        // Get current user name and currency to preserve them
+        const currentUserName = formData.name;
+        const currentCurrency = formData.currency;
+        
+        setFormData({
+          name: currentUserName, // Keep current user name
+          por: "",
+          pol: "",
+          container_type: "",
+          shipping_lines: "",
+          weight20ft0_10: { value: "", currency: currentCurrency },
+          weight20ft10_20: { value: "", currency: currentCurrency },
+          weight20ft20_26: { value: "", currency: currentCurrency },
+          weight20ft26Plus: { value: "", currency: currentCurrency },
+          weight40ft10_20: { value: "", currency: currentCurrency },
+          weight40ft20Plus: { value: "", currency: currentCurrency },
+          currency: currentCurrency,
+        });
+        
+        // Clear any error messages
+        setErrorMessage("");
+        
+        displaySuccessMessage("Data refreshed and form cleared successfully!");
+      } else {
+        displaySuccessMessage("Data refreshed successfully"); // Add success message
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       
@@ -397,6 +424,50 @@ const Add_rail_freight = () => {
     setIsEditModalOpen(true);
   };
 
+  // Handle copy button click - auto-fill form with selected row data
+  const handleCopyClick = (record) => {
+    // Map the record data to the form structure
+    const copiedData = {
+      name: formData.name, // Keep current user name
+      por: record.por || "",
+      pol: record.pol || "",
+      container_type: record.container_type || "",
+      shipping_lines: record.shipping_lines || "",
+      currency: record.currency || "₹",
+      weight20ft0_10: { 
+        value: record.weight20ft0_10 ? record.weight20ft0_10.toString() : "", 
+        currency: record.currency || "₹" 
+      },
+      weight20ft10_20: { 
+        value: record.weight20ft10_20 ? record.weight20ft10_20.toString() : "", 
+        currency: record.currency || "₹" 
+      },
+      weight20ft20_26: { 
+        value: record.weight20ft20_26 ? record.weight20ft20_26.toString() : "", 
+        currency: record.currency || "₹" 
+      },
+      weight20ft26Plus: { 
+        value: record.weight20ft26Plus ? record.weight20ft26Plus.toString() : "", 
+        currency: record.currency || "₹" 
+      },
+      weight40ft10_20: { 
+        value: record.weight40ft10_20 ? record.weight40ft10_20.toString() : "", 
+        currency: record.currency || "₹" 
+      },
+      weight40ft20Plus: { 
+        value: record.weight40ft20Plus ? record.weight40ft20Plus.toString() : "", 
+        currency: record.currency || "₹" 
+      },
+    };
+
+    setFormData(copiedData);
+    
+    // Show success message to indicate data has been copied
+    displaySuccessMessage("Data copied to form successfully! You can now modify and submit.");
+    
+    // Scroll to top of the page to show the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   // Handle edit form change
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
@@ -432,7 +503,6 @@ const Add_rail_freight = () => {
         name: editingRecord.name,
         por: editingRecord.por,
         pol: editingRecord.pol,
-        pod: editingRecord.pod || "",
         container_type: editingRecord.container_type,
         shipping_lines: editingRecord.shipping_lines,
         currency: editingRecord.currency,
@@ -473,11 +543,9 @@ const Add_rail_freight = () => {
         throw new Error(
           `Server error: ${response.status} - ${errorText || "Unknown error"}`
         );
-      }
-
-      setIsEditModalOpen(false);
+      }      setIsEditModalOpen(false);
       setEditingRecord(null);
-      fetchRailFreightData();
+      fetchRailFreightData(false); // Don't clear form when updating
 
       // Show success message toast instead of alert
       displaySuccessMessage("Rail freight charge updated successfully!");
@@ -499,9 +567,8 @@ const Add_rail_freight = () => {
       setIsUpdating(false); // End loading animation
     }
   };
-
   useEffect(() => {
-    fetchRailFreightData();
+    fetchRailFreightData(false); // Don't clear form on initial load
 
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
@@ -561,12 +628,11 @@ const Add_rail_freight = () => {
     <div className="bg-gray-50 min-h-screen">
       <Navbar />
       <div className="container mx-auto px-4 py-4">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-bold text-gray-800">
+        <div className="flex justify-between items-center mb-4">          <h1 className="text-xl font-bold text-gray-800">
             Add Rail Freight Charges
           </h1>
           <button
-            onClick={fetchRailFreightData}
+            onClick={() => fetchRailFreightData(true)}
             disabled={isRefreshing}
             className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors ${
               isRefreshing ? "opacity-75 cursor-not-allowed" : ""
@@ -1165,92 +1231,92 @@ const Add_rail_freight = () => {
             <table className="min-w-full bg-white border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                  <th className="py-3 px-3 text-left border-r border-gray-200">
                     User
                   </th>
-                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                  <th className="py-3 px-3 text-left border-r border-gray-200">
                     POR
                   </th>
-                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                  <th className="py-3 px-3 text-left border-r border-gray-200">
                     POL
                   </th>
-                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                  <th className="py-3 px-3 text-left border-r border-gray-200">
                     Container Type
                   </th>
-                  <th className="py-3 px-4 text-left border-r border-gray-200">
+                  <th className="py-3 px-3 text-left border-r border-gray-200">
                     Shipping Line
                   </th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                  <th className="py-3 px-3 text-right border-r border-gray-200">
                     20ft (0-10 Ton)
                   </th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                  <th className="py-3 px-3 text-right border-r border-gray-200">
                     20ft (10-20 Ton)
                   </th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                  <th className="py-3 px-3 text-right border-r border-gray-200">
                     20ft (20-26 Ton)
                   </th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                  <th className="py-3 px-3 text-right border-r border-gray-200">
                     20ft (26+ Ton)
                   </th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                  <th className="py-3 px-3 text-right border-r border-gray-200">
                     40ft (10-20 Ton)
                   </th>
-                  <th className="py-3 px-4 text-right border-r border-gray-200">
+                  <th className="py-3 px-3 text-right border-r border-gray-200">
                     40ft (20+ Ton)
                   </th>
-                  <th className="py-3 px-4 text-center">Actions</th>
+                  <th className="py-3 px-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {currentEntries.length > 0 ? (
                   currentEntries.map((row, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="py-4 px-4 text-sm text-red-600 font-medium border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-red-600 font-medium border-r border-gray-200">
                         {getUserName(row)}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 border-r border-gray-200">
                         {row.por}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 border-r border-gray-200">
                         {row.pol}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 border-r border-gray-200">
                         {row.container_type}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 border-r border-gray-200">
                         {row.shipping_lines}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight20ft0_10
                           ? `${row.currency} ${row.weight20ft0_10}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight20ft10_20
                           ? `${row.currency} ${row.weight20ft10_20}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight20ft20_26
                           ? `${row.currency} ${row.weight20ft20_26}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight20ft26Plus
                           ? `${row.currency} ${row.weight20ft26Plus}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight40ft10_20
                           ? `${row.currency} ${row.weight40ft10_20}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
+                      <td className="py-4 px-3 text-sm text-gray-900 text-right font-medium border-r border-gray-200">
                         {row.weight40ft20Plus
                           ? `${row.currency} ${row.weight40ft20Plus}`
                           : "-"}
                       </td>
-                      <td className="py-4 px-6 text-center">
+                      <td className="py-4 px-4 text-center flex space-x-2">
                         <button
                           onClick={() => handleEditClick(row)}
                           className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium py-1 px-3 rounded-md text-xs transition-colors inline-flex items-center"
@@ -1270,6 +1336,26 @@ const Add_rail_freight = () => {
                             />
                           </svg>
                           Edit
+                        </button>                        <button
+                          onClick={() => handleCopyClick(row)}
+                          className="ml-2 bg-green-100 hover:bg-green-200 text-green-700 font-medium py-1 px-3 rounded-md text-xs transition-colors inline-flex items-center"
+                          title="Copy data to form"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3.5 w-3.5 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                          Copy
                         </button>
                       </td>
                     </tr>
@@ -1532,23 +1618,7 @@ const Add_rail_freight = () => {
                     </select>
                   </div>
 
-                  <div className="mb-4">
-                    <label
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                      htmlFor="edit-pod"
-                    >
-                      Port of Delivery (POD)
-                    </label>
-                    <input
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="edit-pod"
-                      type="text"
-                      name="pod"
-                      value={editingRecord.pod || ""}
-                      onChange={handleEditFormChange}
-                      placeholder="Enter POD"
-                    />
-                  </div>
+                
 
                   <div className="mb-4">
                     <label

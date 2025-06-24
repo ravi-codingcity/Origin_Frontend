@@ -118,6 +118,56 @@ const Add_origin = () => {
     setEditingRecord({ ...record });
     setIsEditModalOpen(true);
   };
+  // Handle copy button click - auto-fill form with selected row data
+  const handleCopyClick = (record) => {
+    console.log("Copying record:", record); // Debug log to see the data structure
+    
+    // Helper function to extract cost data
+    const extractCostData = (field, fieldName) => {
+      if (typeof field === "object" && field !== null) {
+        // New format: {value, currency}
+        return {
+          value: field.value ? field.value.toString() : "",
+          currency: field.currency || "₹"
+        };
+      } else if (field !== undefined && field !== null) {
+        // Old format: simple number with separate currency
+        return {
+          value: field.toString(),
+          currency: record.currency || "₹"
+        };
+      } else {
+        // Default empty
+        return {
+          value: "",
+          currency: "₹"
+        };
+      }
+    };
+
+    // Map the record data to the form structure
+    const copiedData = {
+      name: formData.name, // Keep current user name
+      por: record.por || "",
+      pol: record.pol || "",
+      container_type: record.container_type || "",
+      shipping_lines: record.shipping_lines || "",
+      bl_fees: extractCostData(record.bl_fees, "bl_fees"),
+      thc: extractCostData(record.thc, "thc"),
+      muc: extractCostData(record.muc, "muc"),
+      toll: extractCostData(record.toll, "toll"),
+    };
+
+    console.log("Copied data:", copiedData); // Debug log to see the transformed data
+    
+    setFormData(copiedData);
+    
+    // Show success message to indicate data has been copied
+    displaySuccessMessage("Data copied to form successfully! You can now modify and submit.");
+    
+    // Scroll to top of the page to show the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Handle edit form change
   const handleEditFormChange = (e) => {
@@ -215,15 +265,20 @@ const Add_origin = () => {
           },
           body: JSON.stringify(formDataToSend),
         }
-      );
-
-      if (!response.ok) {
+      );      if (!response.ok) {
         const errorText = await response.text();
         console.error("API error response:", errorText);
         throw new Error(
           `Server error: ${response.status} - ${errorText || "Unknown error"}`
         );
       }
+
+      // Get the response data to add to the list immediately
+      const responseData = await response.json();
+      console.log("Created entry:", responseData);
+
+      // Add the new entry to the top of the list immediately
+      setShipmentData(prevData => [responseData, ...prevData]);
 
       // Reset form on success
       setFormData({
@@ -238,8 +293,9 @@ const Add_origin = () => {
         toll: { value: "", currency: "₹" },
       });
 
-      // Fetch updated data
-      fetchShipmentData();
+      // No need to fetch data since we're adding it immediately
+      // fetchShipmentData(false);
+      fetchShipmentData(false);
 
       // Show success message
       displaySuccessMessage("Entry saved successfully!");
@@ -284,14 +340,19 @@ const Add_origin = () => {
             },
             body: JSON.stringify(formDataToSend),
           }
-        );
-
-        if (!response.ok) {
+        );        if (!response.ok) {
           const errorText = await response.text();
           throw new Error(
             `Server error: ${response.status} - ${errorText || "Unknown error"}`
           );
         }
+
+        // Get the response data to add to the list immediately
+        const responseData = await response.json();
+        console.log("Created entry (fallback):", responseData);
+
+        // Add the new entry to the top of the list immediately
+        setShipmentData(prevData => [responseData, ...prevData]);
 
         // Reset form after successful submission
         setFormData({
@@ -306,8 +367,8 @@ const Add_origin = () => {
           toll: { value: "", currency: "₹" },
         });
 
-        // Fetch updated data
-        fetchShipmentData();
+        // No need to fetch data since we're adding it immediately
+        // fetchShipmentData(false);
 
         // Show success message
         displaySuccessMessage("Entry saved successfully!");
@@ -417,9 +478,8 @@ const Add_origin = () => {
         );
       }
 
-      setIsEditModalOpen(false);
-      setEditingRecord(null);
-      fetchShipmentData();
+      setIsEditModalOpen(false);      setEditingRecord(null);
+      fetchShipmentData(false);
 
       // Show success message
       displaySuccessMessage("Entry updated successfully!");
@@ -501,7 +561,7 @@ const Add_origin = () => {
 
   // Fetch data on component mount and get user info from localStorage
   useEffect(() => {
-    fetchShipmentData();
+    fetchShipmentData(false);
 
     // Get user info from localStorage
     try {
@@ -529,11 +589,18 @@ const Add_origin = () => {
       .filter(Boolean); // Filter out null/undefined values
     return ["", ...new Set(shippingLines)].sort(); // Add empty option and sort alphabetically
   }, [shipmentData]);
+  // Sort data by creation date (newest first) and apply shipping line filter
+  const sortedData = [...shipmentData].sort((a, b) => {
+    // Sort by createdAt date in descending order (newest first)
+    return (
+      new Date(b.createdAt || b.updatedAt || 0) -
+      new Date(a.createdAt || a.updatedAt || 0)
+    );
+  });
 
-  // Apply shipping line filter to the data
   const filteredData = shippingLineFilter
-    ? shipmentData.filter((item) => item.shipping_lines === shippingLineFilter)
-    : shipmentData;
+    ? sortedData.filter((item) => item.shipping_lines === shippingLineFilter)
+    : sortedData;
 
   // Get current entries for pagination - update to use filtered data instead of sortedData
   const indexOfLastEntry = currentPage * entriesPerPage;
@@ -554,9 +621,8 @@ const Add_origin = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold text-gray-800">
            Add Origin/Local Charges
-          </h1>
-          <button
-            onClick={fetchShipmentData}
+          </h1>          <button
+            onClick={() => fetchShipmentData(true)}
             disabled={isRefreshing}
             className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center text-xs transition-colors ${
               isRefreshing ? "opacity-75 cursor-not-allowed" : ""
@@ -1196,6 +1262,26 @@ const Add_origin = () => {
                             />
                           </svg>
                           Edit
+                        </button>
+                        <button
+                          onClick={() => handleCopyClick(row)}
+                          className="ml-2 bg-green-100 hover:bg-green-200 text-green-700 font-medium py-1 px-3 rounded-md text-xs transition-colors inline-flex items-center"
+                        >
+                           <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3.5 w-3.5 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                          Copy
                         </button>
                       </td>
                     </tr>
