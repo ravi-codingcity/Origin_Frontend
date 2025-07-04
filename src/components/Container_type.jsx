@@ -17,7 +17,9 @@ export const getContainerTypeOptions = () => {
     "20ft OT-Out",
     "40ft OT-Out",
     "20ft FR",
-    "40ft FR"
+    "40ft FR",
+    "20ft Haz",
+    "40ft Haz"
   ];
 };
 
