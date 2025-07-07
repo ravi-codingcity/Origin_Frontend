@@ -286,7 +286,7 @@ const Add_rail_freight = () => {
 
       // Use authFetch instead of regular fetch
       const response = await authFetch(
-        "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/create",
+        "https://originbackend-7uvypf08.b4a.run/api/railfreight/forms/create",
         {
           method: "POST",
           headers: {
@@ -357,7 +357,7 @@ const Add_rail_freight = () => {
       
       // Use authFetch instead of regular fetch
       const response = await authFetch(
-        "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/user"
+        "https://originbackend-7uvypf08.b4a.run/api/railfreight/forms/user"
       );
 
       if (!response.ok) {
@@ -528,7 +528,7 @@ const Add_rail_freight = () => {
 
       // Use authFetch instead of regular fetch
       const response = await authFetch(
-        `https://origin-backend-3v3f.onrender.com/api/railfreight/forms/${recordId}`,
+        `https://originbackend-7uvypf08.b4a.run/api/railfreight/forms/${recordId}`,
         {
           method: "PUT",
           headers: {
