@@ -53,6 +53,7 @@ export const getPOROptions = () => {
       "Piyala ICD (HR)",
       "Port Blair Port (AN)",
       "Sonepat ICD (HR)",
+      "Sanand ICD (GJ)",
       "Tughlakabad ICD (DL)",
       "Tuticorin Port (TN)",
       "Visakhapatnam Port (AP)",
