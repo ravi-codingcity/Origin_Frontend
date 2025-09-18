@@ -90,7 +90,7 @@ const View_origin = () => {
     }
     
     // Use the authFetch utility
-    authFetch("https://originbackend-7uvypf08.b4a.run/api/origin/forms/all")
+    authFetch("https://origin-backend-3v3f.onrender.com/api/origin/forms/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(
@@ -246,7 +246,7 @@ const View_origin = () => {
       return;
     }
     
-    authFetch("https://originbackend-7uvypf08.b4a.run/api/origin/forms/all")
+    authFetch("https://origin-backend-3v3f.onrender.com/api/origin/forms/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Network response was not ok (Status: ${response.status})`);

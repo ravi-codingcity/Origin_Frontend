@@ -17,7 +17,7 @@ const Navbar = () => {
     setIsLoggingOut(true);
     try {
       const response = await fetch(
-        "https://originbackend-7uvypf08.b4a.run/api/origin/auth/logout",
+        "https://origin-backend-3v3f.onrender.com/api/origin/auth/logout",
         {
           method: "GET",
           headers: {
