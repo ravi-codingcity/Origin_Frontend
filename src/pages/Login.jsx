@@ -33,7 +33,7 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        "https://origin-backend-3v3f.onrender.com/api/origin/auth/login",
+        "https://saddlebrown-seahorse-737786.hostingersite.com/api/origin/auth/login",
         {
           method: "POST",
           headers: {

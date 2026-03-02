@@ -17,7 +17,7 @@ const Navbar = () => {
     setIsLoggingOut(true);
     try {
       const response = await fetch(
-        "https://origin-backend-3v3f.onrender.com/api/origin/auth/logout",
+        "https://saddlebrown-seahorse-737786.hostingersite.com/api/origin/auth/logout",
         {
           method: "GET",
           headers: {

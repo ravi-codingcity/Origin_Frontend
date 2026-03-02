@@ -115,7 +115,7 @@ function View_rail_freight() {
     }
     
     // Use the authFetch utility
-    authFetch("https://origin-backend-3v3f.onrender.com/api/railfreight/forms/all")
+    authFetch("https://saddlebrown-seahorse-737786.hostingersite.com/api/railfreight/forms/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(
@@ -216,7 +216,7 @@ function View_rail_freight() {
       return;
     }
     
-    authFetch("https://origin-backend-3v3f.onrender.com/api/railfreight/forms/all")
+    authFetch("https://saddlebrown-seahorse-737786.hostingersite.com/api/railfreight/forms/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Network response was not ok (Status: ${response.status})`);

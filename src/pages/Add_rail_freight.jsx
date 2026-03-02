@@ -286,7 +286,7 @@ const Add_rail_freight = () => {
 
       // Use authFetch instead of regular fetch
       const response = await authFetch(
-        "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/create",
+        "https://saddlebrown-seahorse-737786.hostingersite.com/api/railfreight/forms/create",
         {
           method: "POST",
           headers: {
@@ -357,7 +357,7 @@ const Add_rail_freight = () => {
       
       // Use authFetch instead of regular fetch
       const response = await authFetch(
-        "https://origin-backend-3v3f.onrender.com/api/railfreight/forms/user"
+        "https://saddlebrown-seahorse-737786.hostingersite.com/api/railfreight/forms/user"
       );
 
       if (!response.ok) {
@@ -528,7 +528,7 @@ const Add_rail_freight = () => {
 
       // Use authFetch instead of regular fetch
       const response = await authFetch(
-        `https://origin-backend-3v3f.onrender.com/api/railfreight/forms/${recordId}`,
+        `https://saddlebrown-seahorse-737786.hostingersite.com/api/railfreight/forms/${recordId}`,
         {
           method: "PUT",
           headers: {
